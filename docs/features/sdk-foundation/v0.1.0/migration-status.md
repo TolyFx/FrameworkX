@@ -7,7 +7,7 @@ tags: [FrameworkX, migration, identity, storage]
 
 # FrameworkX SDK 迁移状态
 
-> 本文只记录迁移事实，不代表 FrameworkX 已发布或 ViewX 已切换依赖。
+> 本文只记录迁移事实，不代表 FrameworkX 已发布；ViewX 已开始按领域切换稳定 SDK。
 
 ## 已建立独立基线
 
@@ -33,11 +33,17 @@ tags: [FrameworkX, migration, identity, storage]
 | 存储 PostgreSQL adapter | `ViewX/server/src/storage/pg.rs` | 迁移文件账本和配额，不携带 ViewX 引用查询。 |
 | 存储 Axum adapter | `ViewX/server/src/storage/routes.rs` | 拆出通用文件 API，ViewX 关联接口留在宿主。 |
 | 客户端云存储 core/http/queue | `ViewX/client/modules/business/fn_cloud_storage` | 去掉 `viewId/nodeId/itemId` 和 `fn_*` 依赖后迁移。 |
-| ViewX 依赖切换 | `ViewX/client/pubspec.yaml`、`ViewX/server/Cargo.toml` | 全部目标包验证完成后原子切换。 |
+| ViewX 认证与客户端依赖切换 | `ViewX/client/pubspec.yaml`、`ViewX/server/Cargo.toml` | 完成用户 core/adapter 与传输错误边界后原子切换。 |
+
+## 已接入消费方
+
+- ViewX 服务端已将通用存储 core、service、本地后端、OSS、STS 和图片扩展切换到 FrameworkX。
+- ViewX 继续持有 PostgreSQL 文件账本、HTTP 路由、用户配额与 ViewX 节点引用策略。
+- ViewX 中原有的通用存储源码副本已移除，FrameworkX 成为该能力的唯一权威来源。
 
 ## 权威来源规则
 
-- 在 ViewX 尚未切换依赖前，ViewX 当前运行路径仍是生产行为权威来源。
+- 尚未切换的认证、用户与客户端能力仍以 ViewX 当前运行路径为生产行为权威来源。
 - FrameworkX 中已经迁移的代码用于独立边界重构和验证，不接受在两个仓库分别修复同一问题。
 - 新修复先判断是否属于公共能力：公共修复进入 FrameworkX，并在 ViewX 切换任务中回接；ViewX 产品修复继续留在 ViewX。
 - 完成原子切换并验证后，原目录删除或改为版本依赖，不保留第二份可编辑副本。
@@ -49,4 +55,3 @@ tags: [FrameworkX, migration, identity, storage]
 - `flutter pub get --offline`：通过，无跨仓库 path override。
 - `flutter analyze`：通过，无问题。
 - 各个含测试的 Flutter package：全部通过。
-

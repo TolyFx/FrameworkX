@@ -1,0 +1,23 @@
+# fx_storage_service — 可复用文件存储编排层，依赖 fx_storage_core。
+[package]
+name = "fx_storage_service"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_storage_core = { path = "../fx_storage_core" }
+async-trait.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+tokio.workspace = true
+tempfile = "3"
+fx_storage_local = { path = "../backends/fx_storage_local" }
+
+[lints]
+workspace = true

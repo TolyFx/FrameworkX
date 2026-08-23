@@ -1,0 +1,18 @@
+# fx_storage_image — 图像元数据/缩略图提取(实现 fx_storage_service::MetadataExtractor)。
+[package]
+name = "fx_storage_image"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_storage_service = { path = "../../fx_storage_service" }
+image = "0.25"
+async-trait.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true

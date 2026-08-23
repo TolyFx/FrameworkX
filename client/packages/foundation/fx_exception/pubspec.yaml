@@ -1,0 +1,12 @@
+name: fx_exception
+description: "fx exception - 统一异常追踪机制"
+version: 0.0.1+4
+homepage: https://github.com/TolyFx/fx
+resolution: workspace
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0

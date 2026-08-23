@@ -1,0 +1,15 @@
+[package]
+name = "fx_auth_email"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_auth_core = { path = "../../fx_auth_core" }
+fx_auth_code = { path = "../../fx_auth_code" }
+fx_core = { path = "../../../../foundation/fx_core" }
+async-trait.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+[package]
+name = "fx_auth_password"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_auth_core = { path = "../../fx_auth_core" }
+fx_core = { path = "../../../../foundation/fx_core" }
+async-trait.workspace = true
+argon2.workspace = true
+
+[lints]
+workspace = true

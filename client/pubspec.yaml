@@ -1,0 +1,16 @@
+name: frameworkx_client_workspace
+publish_to: none
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+workspace:
+  - packages/foundation/fx_exception
+  - packages/foundation/fx_dio
+  - packages/identity/fx_user_core
+  - packages/identity/fx_user_session
+  - packages/identity/adapters/fx_user_http
+  - packages/identity/ui/fx_user_ui
+  - packages/identity/ui/fx_account
+  - packages/storage/fx_resource
+

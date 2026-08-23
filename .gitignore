@@ -1,0 +1,13 @@
+.DS_Store
+.dart_tool/
+.packages
+build/
+target/
+coverage/
+*.iml
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+

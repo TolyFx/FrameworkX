@@ -1,0 +1,23 @@
+# fx_storage_sts — 阿里云 STS AssumeRole 临时凭证签发(直传用,独立能力包)。
+[package]
+name = "fx_storage_sts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_storage_service = { path = "../../fx_storage_service" }
+reqwest.workspace = true
+async-trait.workspace = true
+hmac = "0.12"
+sha1 = "0.10"
+base64 = "0.22"
+percent-encoding = "2"
+rand.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

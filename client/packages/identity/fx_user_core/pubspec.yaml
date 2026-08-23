@@ -1,0 +1,13 @@
+name: fx_user_core
+description: 面向 Fx 应用的用户认证领域模型与远端仓储契约。
+version: 0.0.1
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+dependencies:
+
+dev_dependencies:
+  lints: ^6.0.0

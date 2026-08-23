@@ -1,0 +1,17 @@
+name: fx_user_session
+description: 面向 Fx 应用的认证编排、HTTP 实现与用户会话状态。
+version: 0.0.1
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+dependencies:
+  bloc: ^9.1.1
+  fx_user_core: ^0.0.1
+
+dev_dependencies:
+  lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

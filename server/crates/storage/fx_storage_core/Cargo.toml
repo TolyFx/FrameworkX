@@ -1,0 +1,14 @@
+# fx_storage_core — 可复用文件存储核心层(协议/类型/错误),零宿主依赖。
+[package]
+name = "fx_storage_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+thiserror = "2"
+serde.workspace = true
+
+[lints]
+workspace = true

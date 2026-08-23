@@ -1,0 +1,18 @@
+# fx_storage_local — 本地文件系统存储后端(实现 fx_storage_core::StorageBackend)。
+[package]
+name = "fx_storage_local"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_storage_core = { path = "../../fx_storage_core" }
+tokio.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+tokio.workspace = true

@@ -7,8 +7,11 @@
 use std::io::Cursor;
 
 use async_trait::async_trait;
-use fx_storage_service::{ImageMetadata, MetadataExtractor, StorageError};
-use image::{DynamicImage, ImageFormat, ImageReader, imageops::FilterType};
+use fx_storage_service::{
+    ImageFit, ImageMetadata, ImageOutputFormat, ImageTransform, MetadataExtractor, StorageError,
+    TransformedImage,
+};
+use image::{DynamicImage, ImageEncoder, ImageFormat, ImageReader, imageops::FilterType};
 
 pub struct ImageExtractor {
     max_size: u32,
@@ -47,6 +50,75 @@ impl MetadataExtractor for ImageExtractor {
             thumb_ext: "webp",
         })
     }
+
+    async fn transform_image(
+        &self,
+        data: &[u8],
+        transform: ImageTransform,
+    ) -> Result<TransformedImage, StorageError> {
+        let image = ImageReader::new(Cursor::new(data))
+            .with_guessed_format()
+            .map_err(image_error)?
+            .decode()
+            .map_err(image_error)?;
+        let image = transform_dimensions(image, transform)?;
+        let mut bytes = Vec::new();
+        let mime_type = match transform.format {
+            ImageOutputFormat::WebP => {
+                image
+                    .write_to(&mut Cursor::new(&mut bytes), ImageFormat::WebP)
+                    .map_err(image_error)?;
+                "image/webp"
+            }
+            ImageOutputFormat::Png => {
+                image
+                    .write_to(&mut Cursor::new(&mut bytes), ImageFormat::Png)
+                    .map_err(image_error)?;
+                "image/png"
+            }
+            ImageOutputFormat::Jpeg => {
+                let rgb = image.to_rgb8();
+                image::codecs::jpeg::JpegEncoder::new_with_quality(&mut bytes, transform.quality)
+                    .write_image(
+                        rgb.as_raw(),
+                        rgb.width(),
+                        rgb.height(),
+                        image::ExtendedColorType::Rgb8,
+                    )
+                    .map_err(image_error)?;
+                "image/jpeg"
+            }
+        };
+        Ok(TransformedImage { bytes, mime_type })
+    }
+}
+
+fn transform_dimensions(
+    image: DynamicImage,
+    transform: ImageTransform,
+) -> Result<DynamicImage, StorageError> {
+    let (source_width, source_height) = (image.width(), image.height());
+    let (width, height) = match (transform.width, transform.height) {
+        (Some(width), Some(height)) => (width, height),
+        (Some(width), None) => (
+            width,
+            ((source_height as u64 * width as u64) / source_width as u64).max(1) as u32,
+        ),
+        (None, Some(height)) => (
+            ((source_width as u64 * height as u64) / source_height as u64).max(1) as u32,
+            height,
+        ),
+        (None, None) => return Err(StorageError::Image("缺少目标宽度或高度".to_owned())),
+    };
+    Ok(match transform.fit {
+        ImageFit::Contain => image.resize(width, height, FilterType::Lanczos3),
+        ImageFit::Cover => image.resize_to_fill(width, height, FilterType::Lanczos3),
+        ImageFit::Fill => image.resize_exact(width, height, FilterType::Lanczos3),
+    })
+}
+
+fn image_error(error: impl std::fmt::Display) -> StorageError {
+    StorageError::Image(error.to_string())
 }
 
 fn generate_thumbnail(img: &DynamicImage, max_size: u32) -> DynamicImage {

@@ -16,6 +16,12 @@ pub type Scope = Arc<str>;
 /// 统一存储错误。宿主端口实现需将底层(数据库/对象存储)错误映射为对应变体。
 #[derive(Debug, thiserror::Error)]
 pub enum StorageError {
+    #[error("文件 hash 格式无效")]
+    InvalidHash,
+
+    #[error("文件内容与 hash 不一致")]
+    HashMismatch,
+
     #[error("文件类型不支持: {0}")]
     UnsupportedType(String),
 

@@ -1,0 +1,17 @@
+[package]
+name = "fx_user_postgres"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_core = { path = "../../../../foundation/fx_core" }
+fx_auth_core = { path = "../../../auth/fx_auth_core" }
+fx_user_core = { path = "../../fx_user_core" }
+async-trait.workspace = true
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono", "json"] }
+chrono.workspace = true
+
+[lints]
+workspace = true

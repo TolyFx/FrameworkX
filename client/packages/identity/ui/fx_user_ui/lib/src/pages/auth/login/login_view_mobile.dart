@@ -11,7 +11,7 @@ class LoginViewMobile extends StatelessWidget {
   final bool submitting;
   final ValueChanged<FxLoginMethod> onMethodChanged;
   final VoidCallback onToggleMode;
-  final Future<void> Function(Future<void> Function()? login) onThirdPartyLogin;
+  final Future<void> Function(FxThirdPartyLogin? login) onThirdPartyLogin;
 
   const LoginViewMobile({
     super.key,

@@ -40,7 +40,7 @@ pub trait AccessTokenVerifier: Send + Sync {
 }
 ```
 
-存储 Axum 适配器只依赖 `AccessTokenVerifier`，不依赖 `FxUserService`、用户 Repository 或用户数据库表。
+存储 Axum 适配器只依赖 `ScopeResolver`，默认 `BearerScopeResolver` 负责解析 Header；宿主仅注入 `token → Scope` 闭包，不依赖 `FxUserService`、用户 Repository 或用户数据库表。
 
 ### 3.2 身份数据
 
@@ -167,6 +167,7 @@ server/
 │   │   │       ├── fx_auth_apple/
 │   │   │       ├── fx_auth_email/
 │   │   │       ├── fx_auth_github/
+│   │   │       ├── fx_auth_google/
 │   │   │       ├── fx_auth_password/
 │   │   │       └── fx_auth_sms/
 │   │   └── user/
@@ -318,7 +319,7 @@ flowchart TD
 
 ### 5.7 SQL 与数据库迁移维护
 
-数据库迁移遵循“**模块拥有、宿主编排、编号全局唯一、历史只读、只向前演进**”的原则。
+数据库迁移遵循“**领域拥有、宿主编排、领域内有序、历史只读、只向前演进**”的原则。
 
 #### 所有权
 
@@ -334,22 +335,21 @@ flowchart TD
 
 #### 文件编号
 
-所有会进入同一数据库的 migration 使用全局唯一时间序列，不允许每个 crate 独立从 `0001` 开始：
+FrameworkX 与各产品分别维护自己的编号空间，均可从 `001` 开始；迁移账本使用
+`source + filename` 作为唯一键，不把 SDK 的内部迁移数量泄漏给消费方：
 
 ```text
-YYYYMMDDHHMM_domain_action.sql
-
-202608240001_identity_accounts.sql
-202608240002_identity_credentials.sql
-202608240101_storage_objects.sql
-202608240201_viewx_asset_refs.sql
+frameworkx/001_fx_user.sql
+frameworkx/002_fx_user_scan.sql
+viewx/001_view_sync.sql
+viewx/002_app_services.sql
 ```
 
-名称中的时间用于全局排序和避免 SQLx `_sqlx_migrations` 版本冲突，不代表运行时动态生成。发布后不得重命名、修改内容或复用编号。
+编号只保证同一来源内部的执行顺序。发布后不得重命名、修改内容或复用编号。
 
 #### 执行边界
 
-每个 PostgreSQL adapter 使用 `sqlx::migrate!` 内嵌并公开自己的 `MIGRATOR`；统一迁移工具按依赖顺序显式执行：
+FrameworkX 在 `server/migrations/postgres` 提供稳定聚合入口；统一迁移工具按依赖顺序显式执行：
 
 ```text
 identity migrations

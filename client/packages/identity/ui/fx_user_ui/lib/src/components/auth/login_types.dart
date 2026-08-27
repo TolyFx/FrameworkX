@@ -19,6 +19,12 @@ typedef FxVerificationCodeRequest =
       required String identifier,
     });
 
+/// 第三方登录回调：成功返回 true，取消或未完成授权返回 false。
+typedef FxThirdPartyLogin = Future<bool> Function();
+
+/// 登录交互异常回调，由宿主决定 Toast、日志或其他展示策略。
+typedef FxLoginErrorListener = void Function(Object error);
+
 /// 登录界面可配置项：标题、副标题、Logo、支持的登录方式、协议文案等。
 class FxUserUiConfig {
   final String title;
@@ -29,8 +35,8 @@ class FxUserUiConfig {
   final VoidCallback? onUserAgreement;
   final VoidCallback? onPrivacyPolicy;
   final String Function(Object error) errorText;
-  final Future<void> Function()? onGithubLogin;
-  final Future<void> Function()? onAppleLogin;
+  final FxThirdPartyLogin? onGithubLogin;
+  final FxThirdPartyLogin? onAppleLogin;
   final bool showGithub;
   final bool showApple;
   final Future<FxScanSession> Function()? createScanSession;

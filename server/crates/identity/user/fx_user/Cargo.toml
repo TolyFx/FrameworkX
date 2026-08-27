@@ -1,0 +1,16 @@
+[package]
+name = "fx_user"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_auth_core = { path = "../../auth/fx_auth_core" }
+fx_user_core = { path = "../fx_user_core" }
+fx_user_service = { path = "../fx_user_service" }
+fx_user_postgres = { path = "../adapters/fx_user_postgres" }
+fx_user_axum = { path = "../adapters/fx_user_axum" }
+
+[lints]
+workspace = true

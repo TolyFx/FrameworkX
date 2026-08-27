@@ -60,7 +60,7 @@ class HttpFxUserRepository implements FxUserRepository {
   Future<FxUser> currentUser() async {
     final ApiRet<dynamic> result = await host.get<dynamic>(
       '/user/profile',
-      convertor: _apiData,
+      convertor: _responseData,
     );
     return _userFrom(_unwrap(result));
   }
@@ -70,7 +70,7 @@ class HttpFxUserRepository implements FxUserRepository {
     final ApiRet<dynamic> result = await host.put<dynamic>(
       '/user/profile',
       data: patch.toJson(),
-      convertor: _apiData,
+      convertor: _responseData,
     );
     return _userFrom(_unwrap(result));
   }
@@ -112,7 +112,7 @@ class HttpFxUserRepository implements FxUserRepository {
   Future<FxScanSession> createScanSession() async {
     final ApiRet<dynamic> result = await host.post<dynamic>(
       '/auth/scan/create',
-      convertor: _apiData,
+      convertor: _responseData,
     );
     final Map<String, dynamic> json = _asMap(_unwrap(result));
     return FxScanSession(
@@ -126,7 +126,7 @@ class HttpFxUserRepository implements FxUserRepository {
     final ApiRet<dynamic> result = await host.get<dynamic>(
       '/auth/scan/status',
       queryParameters: {'token': token},
-      convertor: _apiData,
+      convertor: _responseData,
     );
     final Map<String, dynamic> json = _asMap(_unwrap(result));
     return FxScanStatus(
@@ -156,12 +156,12 @@ class HttpFxUserRepository implements FxUserRepository {
   }
 
   String? _decodeCode(dynamic response) {
-    final Map<String, dynamic> data = _asMap(_apiData(response));
+    final Map<String, dynamic> data = _asMap(_responseData(response));
     return data['code'] as String?;
   }
 
   AuthResult _decodeAuthEnvelope(dynamic response) {
-    return _decodeAuth(_apiData(response));
+    return _decodeAuth(_responseData(response));
   }
 
   AuthResult _decodeAuth(dynamic data) {
@@ -185,15 +185,15 @@ class HttpFxUserRepository implements FxUserRepository {
   FxUser _userFrom(dynamic data) => userDecoder(_asMap(data));
 }
 
-dynamic _apiData(dynamic response) {
+dynamic _responseData(dynamic response) {
   final Map<String, dynamic> envelope = _asMap(
     response,
     message: 'Invalid API response.',
   );
-  if (!envelope.containsKey('data')) {
-    throw const FormatException('API response is missing data.');
+  if (envelope.containsKey('data')) {
+    return envelope['data'];
   }
-  return envelope['data'];
+  return response;
 }
 
 Map<String, dynamic> _asMap(Object? data, {String? message}) {
@@ -212,4 +212,3 @@ T _unwrap<T>(ApiRet<T> result) {
     ApiFail<T>(:final Trace trace) => throw trace,
   };
 }
-

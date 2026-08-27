@@ -28,11 +28,7 @@ pub struct AppError {
 }
 
 impl AppError {
-    pub fn new(
-        kind: ErrorKind,
-        code: impl Into<String>,
-        message: impl Into<String>,
-    ) -> Self {
+    pub fn new(kind: ErrorKind, code: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             kind,
             code: code.into(),
@@ -113,4 +109,3 @@ impl std::fmt::Display for AppError {
 }
 
 impl std::error::Error for AppError {}
-

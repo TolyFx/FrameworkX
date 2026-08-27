@@ -1,0 +1,22 @@
+[package]
+name = "fx_user_axum"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx_core = { path = "../../../../foundation/fx_core" }
+fx_server_web = { path = "../../../../foundation/fx_server_web" }
+fx_auth_core = { path = "../../../auth/fx_auth_core" }
+fx_auth_code = { path = "../../../auth/fx_auth_code" }
+fx_user_core = { path = "../../fx_user_core" }
+fx_user_service = { path = "../../fx_user_service" }
+axum = "0.8"
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

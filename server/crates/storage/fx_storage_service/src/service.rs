@@ -9,10 +9,13 @@
 use std::sync::Arc;
 
 use fx_storage_core::{QuotaSnapshot, Scope, StorageBackend, StorageError, StorageObject};
+use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 use crate::config::{StorageServiceConfig, date_path, ext_of, mime_from_ext, truncate_filename};
-use crate::ports::{FileObjectStore, MetadataExtractor, NewStorageObject, QuotaPolicy, VideoMeta};
+use crate::ports::{
+    FileObjectStore, ImageTransform, MetadataExtractor, NewStorageObject, QuotaPolicy, VideoMeta,
+};
 
 /// 上传统一结果。`url` 由后端 `url_for` 解析,核心不关心本地/对象存储。
 #[derive(Debug, serde::Serialize)]
@@ -214,6 +217,29 @@ impl<B: StorageBackend> StorageService<B> {
         Ok(FileContent { bytes, mime_type })
     }
 
+    /// 读取当前 scope 的本地或远端原图，并按调用方已校验的规格动态生成图片变体。
+    pub async fn read_image_variant(
+        &self,
+        id: i64,
+        scope: &Scope,
+        transform: ImageTransform,
+    ) -> Result<FileContent, StorageError> {
+        let file = self
+            .store
+            .get(id, scope)
+            .await?
+            .ok_or(StorageError::NotFound)?;
+        if file.mime_category != "image" {
+            return Err(StorageError::UnsupportedType(file.mime_type));
+        }
+        let source = self.backend.get(&file.storage_path).await?;
+        let transformed = self.metadata.transform_image(&source, transform).await?;
+        Ok(FileContent {
+            bytes: transformed.bytes,
+            mime_type: transformed.mime_type.to_owned(),
+        })
+    }
+
     /// 当前归属内的去重不改变引用计数；画板引用由业务链接表单独维护。
     async fn check_dedup(
         &self,
@@ -244,6 +270,7 @@ impl<B: StorageBackend> StorageService<B> {
         hash: &str,
         upload_id: Uuid,
     ) -> Result<UploadResult, StorageError> {
+        validate_sha256(hash, data)?;
         if let Some(file) = self.store.find_by_upload_id(scope, upload_id).await? {
             let quota: QuotaSnapshot = self.quota.current(scope).await?;
             return Ok(dedup_result(file, &self.backend, quota));
@@ -544,6 +571,21 @@ impl<B: StorageBackend> StorageService<B> {
             snapshot: snap,
         })
     }
+}
+
+fn validate_sha256(expected: &str, data: &[u8]) -> Result<(), StorageError> {
+    let valid_format = expected.len() == 64
+        && expected
+            .bytes()
+            .all(|value| value.is_ascii_digit() || (b'a'..=b'f').contains(&value));
+    if !valid_format {
+        return Err(StorageError::InvalidHash);
+    }
+    let actual = format!("{:x}", Sha256::digest(data));
+    if actual != expected {
+        return Err(StorageError::HashMismatch);
+    }
+    Ok(())
 }
 
 /// 由命中去重的既有对象构造 `UploadResult`

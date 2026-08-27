@@ -6,8 +6,10 @@
 
 use std::io::Cursor;
 
-use fx_storage_service::{ImageMetadata, MetadataExtractor};
 use fx_storage_image::ImageExtractor;
+use fx_storage_service::{
+    ImageFit, ImageMetadata, ImageOutputFormat, ImageTransform, MetadataExtractor,
+};
 
 /// 用 image crate 造一张 w×h 的纯色 PNG,返回字节
 fn png_bytes(w: u32, h: u32) -> Vec<u8> {
@@ -52,4 +54,25 @@ async fn extract_image_invalid_bytes_errors() {
     let extractor = ImageExtractor::new(400, 80);
     let err = extractor.extract_image(b"not-an-image").await;
     assert!(err.is_err());
+}
+
+#[tokio::test]
+async fn transform_image_supports_dynamic_cover_dimensions() {
+    let extractor = ImageExtractor::new(400, 80);
+    let output = extractor
+        .transform_image(
+            &png_bytes(1000, 500),
+            ImageTransform {
+                width: Some(240),
+                height: Some(135),
+                fit: ImageFit::Cover,
+                quality: 80,
+                format: ImageOutputFormat::WebP,
+            },
+        )
+        .await
+        .unwrap();
+    let image = image::load_from_memory(&output.bytes).unwrap();
+    assert_eq!((image.width(), image.height()), (240, 135));
+    assert_eq!(output.mime_type, "image/webp");
 }

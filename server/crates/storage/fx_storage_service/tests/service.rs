@@ -11,17 +11,22 @@ use std::sync::{
 };
 
 use async_trait::async_trait;
+use fx_storage_local::LocalFs;
 use fx_storage_service::{
     FileObjectStore, ImageMetadata, MetadataExtractor, NewStorageObject, QuotaPolicy,
     QuotaSnapshot, Scope, StorageError, StorageObject, StorageService, StorageServiceConfig,
     VideoMeta,
 };
-use fx_storage_local::LocalFs;
+use sha2::{Digest, Sha256};
 
 // ─── 不透明 scope 构造 helper ───
 
 fn scope(s: &str) -> Scope {
     Arc::from(s)
+}
+
+fn hash(data: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(data))
 }
 
 // ─── fake 端口 ───
@@ -264,7 +269,7 @@ async fn upload_image_new_stores_and_consumes_quota() {
     let data = b"fake-image-bytes";
 
     let r = svc
-        .upload_image(&scope("user:1"), data, "a.jpg", "hash-a")
+        .upload_image(&scope("user:1"), data, "a.jpg", &hash(data))
         .await
         .unwrap();
 
@@ -294,14 +299,14 @@ async fn upload_image_dedup_reuses_owner_asset_without_second_store_or_quota() {
     let tmp = tempfile::tempdir().unwrap();
     let (svc, store, quota) = build(&tmp, 0, 1_000_000, 1_000_000);
 
-    svc.upload_image(&scope("u"), b"data", "a.jpg", "hash-a")
+    svc.upload_image(&scope("u"), b"data", "a.jpg", &hash(b"data"))
         .await
         .unwrap();
     let before_files = store.count();
     let before_used = quota.current(&scope("u")).await.unwrap().used_bytes;
 
     let r = svc
-        .upload_image(&scope("u"), b"data-dup", "a.jpg", "hash-a")
+        .upload_image(&scope("u"), b"data", "a.jpg", &hash(b"data"))
         .await
         .unwrap();
 
@@ -321,7 +326,7 @@ async fn upload_image_too_large_rejected() {
     let data = vec![0u8; 20];
 
     let err = svc
-        .upload_image(&scope("u"), &data, "a.jpg", "h")
+        .upload_image(&scope("u"), &data, "a.jpg", &hash(&data))
         .await
         .unwrap_err();
 
@@ -335,11 +340,39 @@ async fn upload_image_unsupported_type_rejected() {
     let (svc, _store, _quota) = build(&tmp, 0, 1_000_000, 1_000_000);
 
     let err = svc
-        .upload_image(&scope("u"), b"x", "a.bmp", "h")
+        .upload_image(&scope("u"), b"x", "a.bmp", &hash(b"x"))
         .await
         .unwrap_err();
 
     assert!(matches!(err, StorageError::UnsupportedType(_)));
+}
+
+#[tokio::test]
+async fn upload_image_rejects_invalid_hash_format() {
+    let tmp = tempfile::tempdir().unwrap();
+    let (svc, store, _quota) = build(&tmp, 0, 1_000_000, 1_000_000);
+
+    let err = svc
+        .upload_image(&scope("u"), b"data", "a.jpg", "invalid")
+        .await
+        .unwrap_err();
+
+    assert!(matches!(err, StorageError::InvalidHash));
+    assert_eq!(store.count(), 0);
+}
+
+#[tokio::test]
+async fn upload_image_rejects_hash_mismatch() {
+    let tmp = tempfile::tempdir().unwrap();
+    let (svc, store, _quota) = build(&tmp, 0, 1_000_000, 1_000_000);
+
+    let err = svc
+        .upload_image(&scope("u"), b"data", "a.jpg", &hash(b"other"))
+        .await
+        .unwrap_err();
+
+    assert!(matches!(err, StorageError::HashMismatch));
+    assert_eq!(store.count(), 0);
 }
 
 #[tokio::test]
@@ -350,7 +383,7 @@ async fn upload_image_quota_exceeded_aborts_before_store() {
     let data = vec![0u8; 20_000];
 
     let err = svc
-        .upload_image(&scope("u"), &data, "a.jpg", "h")
+        .upload_image(&scope("u"), &data, "a.jpg", &hash(&data))
         .await
         .unwrap_err();
 
@@ -406,10 +439,10 @@ async fn delete_file_does_not_treat_refcount_as_delete_authority() {
     let tmp = tempfile::tempdir().unwrap();
     let (svc, store, quota) = build(&tmp, 0, 1_000_000, 1_000_000);
     // 画板引用关系由业务域维护，`StorageService` 不以冗余计数判断删除资格。
-    svc.upload_image(&scope("u"), b"d", "a.jpg", "h")
+    svc.upload_image(&scope("u"), b"d", "a.jpg", &hash(b"d"))
         .await
         .unwrap();
-    svc.upload_image(&scope("u"), b"d", "a.jpg", "h")
+    svc.upload_image(&scope("u"), b"d", "a.jpg", &hash(b"d"))
         .await
         .unwrap();
     let id = store.only().id;
@@ -426,7 +459,7 @@ async fn delete_file_does_not_treat_refcount_as_delete_authority() {
 async fn delete_file_last_ref_physical_deletes_and_releases_quota() {
     let tmp = tempfile::tempdir().unwrap();
     let (svc, store, quota) = build(&tmp, 0, 1_000_000, 1_000_000);
-    svc.upload_image(&scope("u"), b"d", "a.jpg", "h")
+    svc.upload_image(&scope("u"), b"d", "a.jpg", &hash(b"d"))
         .await
         .unwrap();
     let id = store.only().id;
@@ -447,11 +480,14 @@ async fn delete_file_last_ref_physical_deletes_and_releases_quota() {
 async fn check_file_exists_does_not_increment_ref() {
     let tmp = tempfile::tempdir().unwrap();
     let (svc, store, _quota) = build(&tmp, 0, 1_000_000, 1_000_000);
-    svc.upload_image(&scope("u"), b"d", "a.jpg", "h")
+    svc.upload_image(&scope("u"), b"d", "a.jpg", &hash(b"d"))
         .await
         .unwrap();
 
-    let found = svc.check_file_exists(&scope("u"), "h").await.unwrap();
+    let found = svc
+        .check_file_exists(&scope("u"), &hash(b"d"))
+        .await
+        .unwrap();
 
     assert!(found.is_some());
     assert_eq!(store.only().ref_count, 1); // 预检不递增
@@ -486,7 +522,7 @@ async fn quota_changed_callback_fires_on_consume() {
             *fired2.lock().unwrap() = Some(snap);
         }));
 
-    svc.upload_image(&scope("u"), b"data", "a.jpg", "h")
+    svc.upload_image(&scope("u"), b"data", "a.jpg", &hash(b"data"))
         .await
         .unwrap();
 

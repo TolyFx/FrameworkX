@@ -9,8 +9,9 @@ fx_auth_* providers -> fx_auth_core
 fx_user_axum        -> fx_user_service -> fx_user_core
 fx_user_postgres    ------------------> fx_user_core
 fx_storage_axum     -> fx_storage_service -> fx_storage_core
-fx_storage_postgres ---------------------> fx_storage_core
+fx_storage_postgres -> fx_storage_service -> fx_storage_core
+fx_storage_router   -> fx_storage_local + fx_storage_oss -> fx_storage_core
 ```
 
-核心 crate 不依赖 Axum 或 SQLx；数据库迁移跟随对应 PostgreSQL adapter 管理。
-
+核心 crate 不依赖 Axum 或 SQLx；所有 PostgreSQL adapter 共享的基础迁移统一由
+`server/migrations/postgres` 管理，消费方只聚合该稳定入口与自身产品迁移。

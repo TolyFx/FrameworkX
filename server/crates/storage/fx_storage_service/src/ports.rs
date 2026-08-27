@@ -76,6 +76,34 @@ pub struct ImageMetadata {
     pub thumb_ext: &'static str,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ImageFit {
+    Contain,
+    Cover,
+    Fill,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ImageOutputFormat {
+    WebP,
+    Jpeg,
+    Png,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ImageTransform {
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub fit: ImageFit,
+    pub quality: u8,
+    pub format: ImageOutputFormat,
+}
+
+pub struct TransformedImage {
+    pub bytes: Vec<u8>,
+    pub mime_type: &'static str,
+}
+
 /// 视频元数据(由客户端预提取并随请求上传,服务端不解码视频)
 #[derive(Debug, Clone, Copy)]
 pub struct VideoMeta {
@@ -88,6 +116,16 @@ pub struct VideoMeta {
 #[async_trait]
 pub trait MetadataExtractor: Send + Sync {
     async fn extract_image(&self, data: &[u8]) -> Result<ImageMetadata, StorageError>;
+
+    async fn transform_image(
+        &self,
+        _data: &[u8],
+        _transform: ImageTransform,
+    ) -> Result<TransformedImage, StorageError> {
+        Err(StorageError::UnsupportedType(
+            "动态图片变体未配置".to_owned(),
+        ))
+    }
 }
 
 /// 待持久化的文件对象(owner 无关,scope 单独传入)。

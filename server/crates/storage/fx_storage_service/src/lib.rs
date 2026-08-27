@@ -15,7 +15,8 @@ pub use direct::{
     StsCredentials, UploadGrant,
 };
 pub use ports::{
-    FileObjectStore, ImageMetadata, MetadataExtractor, NewStorageObject, QuotaPolicy, VideoMeta,
+    FileObjectStore, ImageFit, ImageMetadata, ImageOutputFormat, ImageTransform, MetadataExtractor,
+    NewStorageObject, QuotaPolicy, TransformedImage, VideoMeta,
 };
 pub use service::{
     DeleteResult, FileContent, FileInfo, FileListResult, StorageService, UploadResult,

@@ -14,6 +14,8 @@ class FxLoginPage extends StatefulWidget {
   final FxLoginSubmit onLogin;
   final FxVerificationCodeRequest onRequestCode;
   final VoidCallback? onAuthenticated;
+  final VoidCallback? onClose;
+  final FxLoginErrorListener? onError;
   final Duration codeCooldown;
 
   const FxLoginPage({
@@ -22,6 +24,8 @@ class FxLoginPage extends StatefulWidget {
     required this.onLogin,
     required this.onRequestCode,
     this.onAuthenticated,
+    this.onClose,
+    this.onError,
     this.codeCooldown = const Duration(seconds: 60),
   });
 
@@ -93,23 +97,38 @@ class _FxLoginPageState extends State<FxLoginPage> {
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        body: LayoutBuilder(
-          builder: (context, constraints) => constraints.maxWidth >= 768
-              ? LoginViewDesktop(
-                  config: widget.config,
-                  method: _method,
-                  formBody: formBody,
-                  onMethodChanged: _selectMethod,
-                )
-              : LoginViewMobile(
-                  config: widget.config,
-                  method: _method,
-                  formBody: formBody,
-                  submitting: _submitting,
-                  onMethodChanged: _selectMethod,
-                  onToggleMode: _toggleMode,
-                  onThirdPartyLogin: _thirdPartyLogin,
+        body: Stack(
+          children: <Widget>[
+            LayoutBuilder(
+              builder: (context, constraints) => constraints.maxWidth >= 768
+                  ? LoginViewDesktop(
+                      config: widget.config,
+                      method: _method,
+                      formBody: formBody,
+                      onMethodChanged: _selectMethod,
+                    )
+                  : LoginViewMobile(
+                      config: widget.config,
+                      method: _method,
+                      formBody: formBody,
+                      submitting: _submitting,
+                      onMethodChanged: _selectMethod,
+                      onToggleMode: _toggleMode,
+                      onThirdPartyLogin: _thirdPartyLogin,
+                    ),
+            ),
+            if (widget.onClose != null)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: IconButton(
+                    tooltip: '关闭',
+                    onPressed: widget.onClose,
+                    icon: const Icon(Icons.close_rounded),
+                  ),
                 ),
+              ),
+          ],
         ),
       ),
     );
@@ -152,7 +171,7 @@ class _FxLoginPageState extends State<FxLoginPage> {
       if (code != null) _credential.text = code;
       _startCooldown();
     } catch (error) {
-      if (mounted) setState(() => _error = error);
+      _handleError(error);
     } finally {
       if (mounted) setState(() => _sendingCode = false);
     }
@@ -171,13 +190,13 @@ class _FxLoginPageState extends State<FxLoginPage> {
       );
       widget.onAuthenticated?.call();
     } catch (error) {
-      if (mounted) setState(() => _error = error);
+      _handleError(error);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
   }
 
-  Future<void> _thirdPartyLogin(Future<void> Function()? login) async {
+  Future<void> _thirdPartyLogin(FxThirdPartyLogin? login) async {
     if (!_agreed) {
       _showToast('请先阅读并同意用户协议和隐私政策');
       return;
@@ -186,8 +205,23 @@ class _FxLoginPageState extends State<FxLoginPage> {
       _showToast('当前宿主未配置该登录方式');
       return;
     }
-    await login();
-    widget.onAuthenticated?.call();
+    try {
+      final bool authenticated = await login();
+      if (authenticated) widget.onAuthenticated?.call();
+    } catch (error) {
+      _handleError(error);
+    }
+  }
+
+  /// 将交互异常交给宿主；未注入处理器时保留内联错误作为兼容行为。
+  void _handleError(Object error) {
+    if (!mounted) return;
+    final FxLoginErrorListener? listener = widget.onError;
+    if (listener != null) {
+      listener(error);
+      return;
+    }
+    setState(() => _error = error);
   }
 
   void _selectMethod(FxLoginMethod value) {

@@ -20,7 +20,7 @@ class ActionButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 48,
-      child: enabled
+      child: enabled || loading
           ? ElevatedButton(
               onPressed: loading ? null : onPressed,
               style: ElevatedButton.styleFrom(
@@ -33,7 +33,13 @@ class ActionButton extends StatelessWidget {
                 ),
               ),
               child: loading
-                  ? const _BouncingDots()
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
                   : const Text('登录', style: TextStyle(fontSize: 16)),
             )
           : OutlinedButton(
@@ -49,80 +55,6 @@ class ActionButton extends StatelessWidget {
                 style: TextStyle(fontSize: 16, color: Colors.grey[400]),
               ),
             ),
-    );
-  }
-}
-
-class _BouncingDots extends StatefulWidget {
-  const _BouncingDots();
-
-  @override
-  State<_BouncingDots> createState() => _BouncingDotsState();
-}
-
-class _BouncingDotsState extends State<_BouncingDots>
-    with TickerProviderStateMixin {
-  late final List<AnimationController> _controllers;
-  late final List<Animation<double>> _animations;
-
-  @override
-  void initState() {
-    super.initState();
-    _controllers = List.generate(
-      3,
-      (_) => AnimationController(
-        duration: const Duration(milliseconds: 400),
-        vsync: this,
-      ),
-    );
-    _animations = _controllers
-        .map(
-          (controller) => Tween<double>(begin: 0, end: -8).animate(
-            CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-          ),
-        )
-        .toList();
-    for (var index = 0; index < _controllers.length; index++) {
-      Future<void>.delayed(Duration(milliseconds: index * 150), () {
-        if (mounted) _controllers[index].repeat(reverse: true);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(
-          3,
-          (index) => AnimatedBuilder(
-            animation: _animations[index],
-            builder: (_, child) => Transform.translate(
-              offset: Offset(0, _animations[index].value),
-              child: child,
-            ),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

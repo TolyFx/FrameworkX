@@ -205,11 +205,17 @@ class _FxLoginPageState extends State<FxLoginPage> {
       _showToast('当前宿主未配置该登录方式');
       return;
     }
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
     try {
       final bool authenticated = await login();
       if (authenticated) widget.onAuthenticated?.call();
     } catch (error) {
       _handleError(error);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
     }
   }
 

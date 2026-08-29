@@ -10,8 +10,8 @@ final class UserProfilePatch {
   });
 
   Map<String, dynamic> toJson() => {
-        if (displayName != null) 'display_name': displayName,
-        if (avatar != null) 'avatar': avatar.toString(),
-        ...fields,
-      };
+    if (displayName != null) 'display_name': displayName,
+    if (avatar != null) 'avatar': avatar.toString(),
+    ...fields,
+  };
 }

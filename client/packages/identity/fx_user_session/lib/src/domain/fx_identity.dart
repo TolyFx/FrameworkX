@@ -27,4 +27,7 @@ final class FxIdentityField<T> {
 /// Fx 应用通用的公开用户资料字段。
 abstract final class FxIdentityFields {
   static const signature = FxIdentityField<String>('profile.signature');
+  static const email = FxIdentityField<String>('profile.email');
+  static const phone = FxIdentityField<String>('profile.phone');
+  static const hasPassword = FxIdentityField<bool>('profile.has_password');
 }

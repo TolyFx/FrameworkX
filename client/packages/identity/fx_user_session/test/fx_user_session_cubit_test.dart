@@ -27,10 +27,10 @@ final class _Identity implements FxIdentity {
 final class _UserCodec implements FxIdentityCodec<FxUser> {
   @override
   FxIdentity decode(FxUser user) => _Identity(
-        id: user.id,
-        displayName: user.displayName,
-        avatar: user.avatar,
-      );
+    id: user.id,
+    displayName: user.displayName,
+    avatar: user.avatar,
+  );
 }
 
 final class _CredentialStore implements AuthCredentialStore {
@@ -68,8 +68,20 @@ class _Repository implements FxUserRepository {
   @override
   Future<void> cancelScan(String token) => throw UnimplementedError();
   @override
-  Future<bool> changePassword(
-          {required String oldPassword, required String newPassword}) =>
+  Future<bool> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) => throw UnimplementedError();
+  @override
+  Future<FxAccountCheckResult> checkAccount({
+    required String type,
+    required String identifier,
+  }) => throw UnimplementedError();
+  @override
+  Future<FxUser> bindEmail({required String email, required String code}) =>
+      throw UnimplementedError();
+  @override
+  Future<FxUser> bindPhone({required String phone, required String code}) =>
       throw UnimplementedError();
   @override
   Future<void> confirmScan(String token, String action) =>
@@ -83,9 +95,17 @@ class _Repository implements FxUserRepository {
   @override
   Future<bool> logout() => throw UnimplementedError();
   @override
-  Future<String?> requestCode(
-          {required String channel, required String identifier}) =>
-      throw UnimplementedError();
+  Future<String?> requestCode({
+    required String channel,
+    required String identifier,
+    FxVerificationCodeScene scene = FxVerificationCodeScene.login,
+  }) => throw UnimplementedError();
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) => throw UnimplementedError();
   @override
   Future<FxScanStatus> scanStatus(String token) => throw UnimplementedError();
   @override
@@ -121,11 +141,40 @@ final class _RefreshRepository extends _Repository {
   }
 }
 
+final class _AccountSecurityRepository extends _Repository {
+  FxVerificationCodeScene? requestedScene;
+
+  @override
+  Future<FxUser> currentUser() async => const FxUser(
+    id: '20',
+    displayName: 'Toly',
+    profile: {'email': 'old@example.com'},
+  );
+
+  @override
+  Future<String?> requestCode({
+    required String channel,
+    required String identifier,
+    FxVerificationCodeScene scene = FxVerificationCodeScene.login,
+  }) async {
+    requestedScene = scene;
+    return '123456';
+  }
+
+  @override
+  Future<FxUser> bindEmail({
+    required String email,
+    required String code,
+  }) async {
+    return FxUser(id: '20', displayName: 'Toly', profile: {'email': email});
+  }
+}
+
 FxUserSessionCubit _cubit() => FxUserSessionCubit(
-      repository: _Repository(),
-      credentialStore: _CredentialStore(),
-      identityCodec: _UserCodec(),
-    );
+  repository: _Repository(),
+  credentialStore: _CredentialStore(),
+  identityCodec: _UserCodec(),
+);
 
 void main() {
   test('starts while authentication is being established', () async {
@@ -247,6 +296,46 @@ void main() {
     expect(await cubit.refreshCurrentUser(), isTrue);
     expect((cubit.state as FxAuthed).user.displayName, 'New name');
     expect(repository.callCount, 2);
+
+    await cubit.close();
+  });
+
+  test('requestCode forwards the account security scene', () async {
+    final _AccountSecurityRepository repository = _AccountSecurityRepository();
+    final FxUserSessionCubit cubit = FxUserSessionCubit(
+      repository: repository,
+      credentialStore: _CredentialStore(),
+      identityCodec: const FxUserIdentityCodec(),
+    );
+
+    expect(
+      await cubit.requestCode(
+        channel: 'email',
+        identifier: 'user@example.com',
+        scene: FxVerificationCodeScene.bindEmail,
+      ),
+      '123456',
+    );
+    expect(repository.requestedScene, FxVerificationCodeScene.bindEmail);
+
+    await cubit.close();
+  });
+
+  test('bindEmail replaces the active public identity', () async {
+    final _AccountSecurityRepository repository = _AccountSecurityRepository();
+    final FxUserSessionCubit cubit = FxUserSessionCubit(
+      repository: repository,
+      credentialStore: _CredentialStore(
+        value: const BearerCredential(accessToken: 'token'),
+      ),
+      identityCodec: const FxUserIdentityCodec(),
+    );
+    expect(await cubit.restore(), isTrue);
+
+    await cubit.bindEmail(email: 'new@example.com', code: '123456');
+
+    final FxIdentity identity = (cubit.state as FxAuthed).user;
+    expect(identity.read(FxIdentityFields.email), 'new@example.com');
 
     await cubit.close();
   });

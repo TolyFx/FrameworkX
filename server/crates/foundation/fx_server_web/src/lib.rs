@@ -183,6 +183,7 @@ pub struct FxServerConfig {
     pub port: u16,
     pub database_url: Option<String>,
     pub version: String,
+    pub build_time: Option<String>,
 }
 
 impl FxServerConfig {
@@ -198,11 +199,17 @@ impl FxServerConfig {
             port,
             database_url: std::env::var("DATABASE_URL").ok(),
             version: "0.1.0".into(),
+            build_time: None,
         }
     }
 
     pub fn with_version(mut self, version: impl Into<String>) -> Self {
         self.version = version.into();
+        self
+    }
+
+    pub fn with_build_time(mut self, build_time: Option<String>) -> Self {
+        self.build_time = build_time;
         self
     }
 }
@@ -221,7 +228,10 @@ impl FxServer {
         init_tracing();
         let port = self.config.port;
         let app = app
-            .merge(version_routes(self.config.version.clone()))
+            .merge(version_routes_with_build_time(
+                self.config.version.clone(),
+                self.config.build_time.clone(),
+            ))
             .layer(
                 TraceLayer::new_for_http()
                     .make_span_with(
@@ -274,18 +284,28 @@ fn init_tracing() {
 #[derive(Debug, Clone, Serialize)]
 pub struct VersionInfo {
     pub version: String,
+    pub build_time: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 struct VersionState {
     version: String,
+    build_time: Option<String>,
 }
 
 pub fn version_routes(version: impl Into<String>) -> Router {
+    version_routes_with_build_time(version, None)
+}
+
+pub fn version_routes_with_build_time(
+    version: impl Into<String>,
+    build_time: Option<String>,
+) -> Router {
     Router::new()
         .route("/v", get(version_handler))
         .with_state(VersionState {
             version: version.into(),
+            build_time,
         })
 }
 
@@ -294,6 +314,7 @@ async fn version_handler(State(state): State<VersionState>) -> impl IntoResponse
         [(ACCESS_CONTROL_ALLOW_ORIGIN, HeaderValue::from_static("*"))],
         api_ok(VersionInfo {
             version: state.version,
+            build_time: state.build_time,
         }),
     )
 }
@@ -305,11 +326,16 @@ pub fn load_server_env() {
 }
 
 pub fn find_server_env_file() -> Option<PathBuf> {
-    let mut dir = std::env::current_dir().ok()?;
+    find_server_env_file_from(std::env::current_dir().ok()?)
+}
+
+fn find_server_env_file_from(mut dir: PathBuf) -> Option<PathBuf> {
     loop {
-        let candidate = dir.join(".fx").join(".env").join(".server.env");
-        if candidate.exists() {
-            return Some(candidate);
+        for relative in [".fx/.env/.server.env", ".server.env"] {
+            let candidate = dir.join(relative);
+            if candidate.exists() {
+                return Some(candidate);
+            }
         }
         if !dir.pop() {
             return None;
@@ -330,10 +356,27 @@ pub fn get_local_ip() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{fs, time::SystemTime};
 
     #[test]
     fn core_error_maps_to_http_status() {
         let error = AppError::from(CoreError::conflict("DUPLICATE", "重复"));
         assert_eq!(status_from_kind(error.0.kind), StatusCode::CONFLICT);
+    }
+
+    #[test]
+    fn server_env_supports_self_contained_release_directory() {
+        let unique = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("system clock must be after unix epoch")
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("fx-server-env-{unique}"));
+        let nested = root.join("server").join("uploads");
+        let env_file = root.join("server").join(".server.env");
+        fs::create_dir_all(&nested).expect("create nested release directory");
+        fs::write(&env_file, "SERVER_PORT=9602\n").expect("write release env");
+
+        assert_eq!(find_server_env_file_from(nested), Some(env_file));
+        fs::remove_dir_all(root).expect("remove test directory");
     }
 }

@@ -79,8 +79,43 @@ class FxUserSessionCubit extends Cubit<FxUserSession>
   Future<String?> requestCode({
     required String channel,
     required String identifier,
-  }) =>
-      repository.requestCode(channel: channel, identifier: identifier);
+    FxVerificationCodeScene scene = FxVerificationCodeScene.login,
+  }) => repository.requestCode(
+    channel: channel,
+    identifier: identifier,
+    scene: scene,
+  );
+
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) => repository.resetPassword(
+    email: email,
+    code: code,
+    newPassword: newPassword,
+  );
+
+  Future<FxAccountCheckResult> checkAccount({
+    required String type,
+    required String identifier,
+  }) => repository.checkAccount(type: type, identifier: identifier);
+
+  /// 绑定邮箱并用服务端返回资料更新当前会话。
+  Future<void> bindEmail({required String email, required String code}) async {
+    final UserCredential? credential = _credential;
+    if (credential == null) throw StateError('Authentication is required.');
+    final FxUser user = await repository.bindEmail(email: email, code: code);
+    _activate(credential, user);
+  }
+
+  /// 绑定手机号并用服务端返回资料更新当前会话。
+  Future<void> bindPhone({required String phone, required String code}) async {
+    final UserCredential? credential = _credential;
+    if (credential == null) throw StateError('Authentication is required.');
+    final FxUser user = await repository.bindPhone(phone: phone, code: code);
+    _activate(credential, user);
+  }
 
   Future<void> updateProfile(UserProfilePatch patch) async {
     final credential = _credential;
@@ -224,8 +259,6 @@ class FxUserSessionCubit extends Cubit<FxUserSession>
   /// 远端资料优先，本地快照仅补齐服务端响应中缺失的扩展字段。
   FxUser _mergeUser(FxUser? snapshot, FxUser remote) {
     if (snapshot == null || snapshot.id != remote.id) return remote;
-    return remote.copyWith(
-      profile: {...snapshot.profile, ...remote.profile},
-    );
+    return remote.copyWith(profile: {...snapshot.profile, ...remote.profile});
   }
 }

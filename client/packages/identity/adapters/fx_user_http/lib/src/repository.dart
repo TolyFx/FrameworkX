@@ -25,13 +25,32 @@ class HttpFxUserRepository implements FxUserRepository {
   Future<String?> requestCode({
     required String channel,
     required String identifier,
+    FxVerificationCodeScene scene = FxVerificationCodeScene.login,
   }) async {
     final ApiRet<String?> result = await host.post<String?>(
       '/auth/code',
-      data: {'channel': channel, 'identifier': identifier},
+      data: {
+        'channel': channel,
+        'identifier': identifier,
+        'scene': scene.value,
+      },
       convertor: _decodeCode,
     );
     return _unwrap(result);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    final ApiRet<void> result = await host.post<void>(
+      '/auth/password/reset',
+      data: {'email': email, 'code': code, 'new_password': newPassword},
+      convertor: _decodeVoid,
+    );
+    _unwrap(result);
   }
 
   @override
@@ -70,6 +89,45 @@ class HttpFxUserRepository implements FxUserRepository {
     final ApiRet<dynamic> result = await host.put<dynamic>(
       '/user/profile',
       data: patch.toJson(),
+      convertor: _responseData,
+    );
+    return _userFrom(_unwrap(result));
+  }
+
+  @override
+  Future<FxAccountCheckResult> checkAccount({
+    required String type,
+    required String identifier,
+  }) async {
+    final ApiRet<dynamic> result = await host.post<dynamic>(
+      '/user/account/check',
+      data: {'type': type, 'identifier': identifier},
+      convertor: _responseData,
+    );
+    return FxAccountCheckResult.fromJson(_asMap(_unwrap(result)));
+  }
+
+  @override
+  Future<FxUser> bindEmail({
+    required String email,
+    required String code,
+  }) async {
+    final ApiRet<dynamic> result = await host.put<dynamic>(
+      '/user/email',
+      data: {'email': email, 'code': code},
+      convertor: _responseData,
+    );
+    return _userFrom(_unwrap(result));
+  }
+
+  @override
+  Future<FxUser> bindPhone({
+    required String phone,
+    required String code,
+  }) async {
+    final ApiRet<dynamic> result = await host.put<dynamic>(
+      '/user/phone',
+      data: {'phone': phone, 'code': code},
       convertor: _responseData,
     );
     return _userFrom(_unwrap(result));

@@ -16,10 +16,10 @@ final class VerificationCodeAuth extends AuthRequest {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': channel,
-        'identifier': identifier,
-        'credential': code,
-      };
+    'type': channel,
+    'identifier': identifier,
+    'credential': code,
+  };
 }
 
 final class PasswordAuth extends AuthRequest {
@@ -30,10 +30,10 @@ final class PasswordAuth extends AuthRequest {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'password',
-        'identifier': identifier,
-        'credential': password,
-      };
+    'type': 'password',
+    'identifier': identifier,
+    'credential': password,
+  };
 }
 
 final class OAuthAuth extends AuthRequest {
@@ -44,8 +44,8 @@ final class OAuthAuth extends AuthRequest {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': provider,
-        'identifier': '',
-        'credential': code,
-      };
+    'type': provider,
+    'identifier': '',
+    'credential': code,
+  };
 }

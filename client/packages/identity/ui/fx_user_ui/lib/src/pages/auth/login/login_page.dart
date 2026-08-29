@@ -178,6 +178,10 @@ class _FxLoginPageState extends State<FxLoginPage> {
   }
 
   Future<void> _submit() async {
+    if (!_agreed) {
+      _showToast('请先阅读并同意用户协议和隐私政策');
+      return;
+    }
     setState(() {
       _submitting = true;
       _error = null;

@@ -22,11 +22,11 @@ final class FxUser {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'display_name': displayName,
-        if (avatar != null) 'avatar': avatar.toString(),
-        'profile': profile,
-      };
+    'id': id,
+    'display_name': displayName,
+    if (avatar != null) 'avatar': avatar.toString(),
+    'profile': profile,
+  };
 
   FxUser copyWith({
     String? id,

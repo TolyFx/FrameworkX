@@ -295,8 +295,8 @@ class FxDio with TraceMixin {
     Dio dio = Dio();
     dio.options.baseUrl = host.url;
     dio.options.connectTimeout = const Duration(seconds: 30);
-    dio.options.receiveTimeout = const Duration(seconds: 10);
-    dio.options.sendTimeout = const Duration(seconds: 10);
+    dio.options.receiveTimeout = const Duration(seconds: 30);
+    dio.options.sendTimeout = const Duration(seconds: 30);
     dio.options.receiveDataWhenStatusError = true;
     dio.options.validateStatus = (status) => status! > 0;
     if (options.enableLog) {

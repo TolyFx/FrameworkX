@@ -16,11 +16,7 @@ class DeleteAccountPage extends StatefulWidget {
   /// 页面非字段提示交给宿主展示。
   final AccountPageMessageRequested? onMessage;
 
-  const DeleteAccountPage({
-    super.key,
-    required this.onSubmit,
-    this.onMessage,
-  });
+  const DeleteAccountPage({super.key, required this.onSubmit, this.onMessage});
 
   @override
   State<DeleteAccountPage> createState() => _DeleteAccountPageState();
@@ -48,24 +44,39 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   @override
   Widget build(BuildContext context) {
     final FxAccountLocalizations l10n = FxAccountLocalizations.of(context)!;
-    final Color background = Theme.of(context).brightness == Brightness.dark
-        ? Colors.black
-        : const Color(0xFFF5F6F8);
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color background = isDark ? const Color(0xFF121212) : Colors.white;
+    final Color foreground = isDark ? Colors.white : Colors.black;
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: Text(l10n.deleteAccountTitle),
         backgroundColor: background,
+        surfaceTintColor: background,
+        elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: foreground),
+        ),
+        title: Text(
+          l10n.deleteAccountTitle,
+          style: TextStyle(
+            color: foreground,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           children: <Widget>[
             _buildWarningCard(context, l10n),
-            const SizedBox(height: 12),
+            const SizedBox(height: 32),
             _buildVerificationCard(context, l10n),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
             _buildSubmitButton(l10n.deleteConfirm),
             const SizedBox(height: 10),
             Text(
@@ -83,46 +94,38 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   }
 
   /// 构建注销后果说明卡片。
-  Widget _buildWarningCard(
-    BuildContext context,
-    FxAccountLocalizations l10n,
-  ) {
-    return _AccountDeleteCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                width: 36,
-                height: 36,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFEEE9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.warning_amber_rounded,
-                  color: Color(0xFFE5484D),
-                  size: 21,
-                ),
+  Widget _buildWarningCard(BuildContext context, FxAccountLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFEEE9),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 10),
-              Text(
-                l10n.deleteNoticeTitle,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFE5484D),
+                size: 21,
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildWarningItem(l10n.deleteProfileWarning),
-          _buildWarningItem(l10n.deleteCloudWarning),
-          _buildWarningItem(l10n.deleteLoginWarning),
-          _buildWarningItem(l10n.deleteLocalFileNotice),
-        ],
-      ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              l10n.deleteNoticeTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildWarningItem(l10n.deleteProfileWarning),
+        _buildWarningItem(l10n.deleteCloudWarning),
+        _buildWarningItem(l10n.deleteLoginWarning),
+        _buildWarningItem(l10n.deleteLocalFileNotice),
+      ],
     );
   }
 
@@ -161,24 +164,32 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     BuildContext context,
     FxAccountLocalizations l10n,
   ) {
-    return _AccountDeleteCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            l10n.verifyIdentityTitle,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l10n.verifyIdentityTitle,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          l10n.deletePasswordHelp,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 13,
           ),
-          const SizedBox(height: 5),
-          Text(
-            l10n.deletePasswordHelp,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 13,
+        ),
+        const SizedBox(height: 14),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+              ),
             ),
           ),
-          const SizedBox(height: 14),
-          TextField(
+          child: TextField(
             controller: _passwordController,
             obscureText: true,
             textInputAction: TextInputAction.done,
@@ -187,35 +198,39 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
             decoration: InputDecoration(
               hintText: l10n.currentPasswordHint,
               errorText: _errorText,
-              filled: true,
-              fillColor: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest
-                  .withValues(alpha: 0.46),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 13,
-              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
-          const SizedBox(height: 10),
-          CheckboxListTile(
-            value: _riskAccepted,
-            onChanged: _submitting ? null : _handleRiskChanged,
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            dense: true,
-            title: Text(
-              l10n.deleteRiskAccepted,
-              style: const TextStyle(fontSize: 13),
+        ),
+        const SizedBox(height: 14),
+        InkWell(
+          onTap: _submitting ? null : () => _handleRiskChanged(!_riskAccepted),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox.square(
+                  dimension: 22,
+                  child: Checkbox(
+                    value: _riskAccepted,
+                    onChanged: _submitting ? null : _handleRiskChanged,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l10n.deleteRiskAccepted,
+                    style: const TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -226,11 +241,11 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         onPressed: _submitting ? null : _requestFinalConfirmation,
         style: FilledButton.styleFrom(
           backgroundColor: const Color(0xFFE5484D),
-          disabledBackgroundColor: const Color(0xFFE5484D).withValues(
-            alpha: 0.45,
-          ),
+          disabledBackgroundColor: const Color(
+            0xFFE5484D,
+          ).withValues(alpha: 0.45),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(24),
           ),
         ),
         child: _submitting
@@ -265,7 +280,8 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
       _showMessage(l10n.deleteAcceptRiskFirst);
       return;
     }
-    final bool confirmed = await showDialog<bool>(
+    final bool confirmed =
+        await showDialog<bool>(
           context: context,
           builder: (BuildContext dialogContext) => AlertDialog(
             title: Text(l10n.deleteFinalTitle),
@@ -295,9 +311,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
       onMessage(message);
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// 将密码交给宿主，页面自身只维护提交中的按钮状态。
@@ -311,22 +327,5 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
-  }
-}
-
-class _AccountDeleteCard extends StatelessWidget {
-  /// 卡片承载的注销说明或验证内容。
-  final Widget child;
-
-  const _AccountDeleteCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(padding: const EdgeInsets.all(18), child: child),
-    );
   }
 }

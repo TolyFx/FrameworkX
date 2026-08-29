@@ -1,0 +1,18 @@
+name: fx_user_preferences
+description: FrameworkX 用户凭据与资料快照的 SharedPreferences 适配器。
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+
+dependencies:
+  fx_user_core: ^0.0.1
+  fx_user_session: ^0.0.1
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^6.0.0

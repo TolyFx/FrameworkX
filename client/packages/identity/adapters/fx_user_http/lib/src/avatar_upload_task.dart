@@ -7,6 +7,9 @@ import 'package:fx_user_core/fx_user_core.dart';
 import 'package:fx_user_session/fx_user_session.dart';
 import 'package:uuid/uuid.dart';
 
+import 'avatar_upload_response_decoder.dart';
+import 'avatar_upload_uri_resolver.dart';
+
 /// 通过 FrameworkX 统一存储接口上传用户头像。
 final class HttpFxAvatarUploadTask implements FxAvatarUploadTask {
   /// 宿主统一请求入口。
@@ -42,7 +45,7 @@ final class HttpFxAvatarUploadTask implements FxAvatarUploadTask {
               'Authorization': 'Bearer ${credential.accessToken}',
             },
           ),
-          convertor: _decodeUploadResult,
+          convertor: decodeAvatarUploadResponse,
         );
     if (!result.success) throw StateError('Avatar upload request failed.');
     final String? rawUrl = result.data['url']?.toString();
@@ -51,15 +54,6 @@ final class HttpFxAvatarUploadTask implements FxAvatarUploadTask {
     }
     final Uri? uri = Uri.tryParse(rawUrl);
     if (uri == null) throw StateError('Avatar upload returned an invalid URL.');
-    return uri.hasScheme || uri.hasAuthority
-        ? uri
-        : Uri.parse(host.url).resolveUri(uri);
+    return resolveAvatarUploadUri(uri, host.url);
   }
-}
-
-Map<String, dynamic> _decodeUploadResult(dynamic raw) {
-  final Map<String, dynamic> envelope = raw as Map<String, dynamic>;
-  final dynamic data = envelope['data'];
-  if (data is! Map) throw const FormatException('Invalid upload response.');
-  return Map<String, dynamic>.from(data);
 }

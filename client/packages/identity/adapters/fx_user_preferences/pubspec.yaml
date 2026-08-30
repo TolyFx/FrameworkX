@@ -1,7 +1,7 @@
 name: fx_user_preferences
 description: FrameworkX 用户凭据与资料快照的 SharedPreferences 适配器。
 version: 0.1.0
-publish_to: none
+homepage: https://github.com/TolyFx/fx
 resolution: workspace
 
 environment:
@@ -16,3 +16,4 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   lints: ^6.0.0
+  shared_preferences_platform_interface: ^2.4.1

@@ -1,7 +1,7 @@
 name: fx_user_session
-description: 面向 Fx 应用的认证编排、HTTP 实现与用户会话状态。
+description: 面向 Fx 应用的认证编排、会话状态与持久化契约。
 version: 0.0.1
-publish_to: none
+homepage: https://github.com/TolyFx/fx
 resolution: workspace
 
 environment:

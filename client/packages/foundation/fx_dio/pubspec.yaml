@@ -1,6 +1,6 @@
 name: fx_dio
 description: "fx dio project."
-version: 0.0.5+2
+version: 0.0.6
 homepage: https://github.com/TolyFx/fx
 resolution: workspace
 

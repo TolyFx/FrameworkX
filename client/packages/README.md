@@ -4,8 +4,6 @@
 
 ```text
 packages/
-├── foundation/
-│   └── fx_exception/
 ├── identity/
 │   ├── fx_user_core/
 │   ├── fx_user_session/
@@ -31,4 +29,6 @@ packages/
 - 跨包只使用 `lib/{package_name}.dart` 公开出口，不 import 其他包的 `src/`。
 - 本地开发由根 Pub Workspace 解析，禁止提交指向其他仓库的 `dependency_overrides`。
 - `fx_dio` 的权威源码位于 [TolyFx/fx](https://github.com/TolyFx/fx/tree/main/modules/core/fx_dio)，本仓库通过 pub.dev 依赖 `fx_dio: ^0.0.6`，不再维护本地副本。
+- `fx_exception` 的权威源码位于 [TolyFx/fx](https://github.com/TolyFx/fx/tree/main/modules/core/fx_exception)，本仓库通过 pub.dev 依赖 `fx_exception: ^0.0.1+4`，不再维护本地副本。
+- `fx_ability` 的权威源码位于 [TolyFx/fx](https://github.com/TolyFx/fx/tree/main/interface/fx_ability)，本仓库不再维护本地副本；需要使用时通过 pub.dev 引入。
 - 尚未迁移的 package 不提前创建空目录。

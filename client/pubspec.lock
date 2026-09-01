@@ -245,6 +245,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  fx_dio:
+    dependency: transitive
+    description:
+      name: fx_dio
+      sha256: "3e67a422f69a919f9448e006e034b30cb462d18cf18a8cfe2c4e7660d483e88c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.6"
   glob:
     dependency: transitive
     description:
@@ -269,14 +277,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
-  http_mock_adapter:
-    dependency: transitive
-    description:
-      name: http_mock_adapter
-      sha256: "46399c78bd4a0af071978edd8c502d7aeeed73b5fb9860bca86b5ed647a63c1b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.1"
   http_multi_server:
     dependency: transitive
     description:
@@ -365,14 +365,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.0"
-  logger:
-    dependency: transitive
-    description:
-      name: logger
-      sha256: "25aee487596a6257655a1e091ec2ae66bc30e7af663592cc3a27e6591e05035c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.7.0"
   logging:
     dependency: transitive
     description:

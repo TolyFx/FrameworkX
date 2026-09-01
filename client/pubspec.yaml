@@ -7,7 +7,6 @@ environment:
 workspace:
   - packages/foundation/fx_ability
   - packages/foundation/fx_exception
-  - packages/foundation/fx_dio
   - packages/identity/fx_user_core
   - packages/identity/fx_user_session
   - packages/identity/adapters/fx_user_http

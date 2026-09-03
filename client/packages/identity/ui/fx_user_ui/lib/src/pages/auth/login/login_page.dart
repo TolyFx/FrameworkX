@@ -7,6 +7,7 @@ import '../../../components/auth/login_form_body.dart';
 import '../../../components/auth/login_types.dart';
 import '../../../components/auth/scan_login_panel.dart';
 import 'login_view_desktop.dart';
+import 'login_view_dialog.dart';
 import 'login_view_mobile.dart';
 
 class FxLoginPage extends StatefulWidget {
@@ -18,6 +19,9 @@ class FxLoginPage extends StatefulWidget {
   final FxLoginErrorListener? onError;
   final Duration codeCooldown;
 
+  /// 登录界面的承载方式，默认展示完整页面。
+  final FxLoginPresentation presentation;
+
   const FxLoginPage({
     super.key,
     required this.config,
@@ -27,6 +31,7 @@ class FxLoginPage extends StatefulWidget {
     this.onClose,
     this.onError,
     this.codeCooldown = const Duration(seconds: 60),
+    this.presentation = FxLoginPresentation.page,
   });
 
   @override
@@ -88,6 +93,15 @@ class _FxLoginPageState extends State<FxLoginPage> {
             onRequestCode: _requestCode,
             onSubmit: _submit,
           );
+
+    if (widget.presentation == FxLoginPresentation.dialog) {
+      return LoginViewDialog(
+        config: widget.config,
+        method: _method,
+        formBody: formBody,
+        onMethodChanged: _selectMethod,
+      );
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(

@@ -44,6 +44,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
+
+  testWidgets('弹框模式只展示登录表单主体', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      _buildLoginApp(
+        FxUserUiConfig(),
+        presentation: FxLoginPresentation.dialog,
+        theme: ThemeData.dark(),
+      ),
+    );
+
+    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.text('WELCOME'), findsNothing);
+    expect(find.text('邮箱登录'), findsOneWidget);
+    expect(find.text('密码登录'), findsOneWidget);
+    final BuildContext dialogContext = tester.element(find.byType(Dialog));
+    expect(Theme.of(dialogContext).brightness, Brightness.light);
+  });
 }
 
 void _useMobileViewport(WidgetTester tester) {
@@ -53,10 +70,16 @@ void _useMobileViewport(WidgetTester tester) {
   addTearDown(tester.view.resetPhysicalSize);
 }
 
-Widget _buildLoginApp(FxUserUiConfig config) {
+Widget _buildLoginApp(
+  FxUserUiConfig config, {
+  FxLoginPresentation presentation = FxLoginPresentation.page,
+  ThemeData? theme,
+}) {
   return MaterialApp(
+    theme: theme,
     home: FxLoginPage(
       config: config,
+      presentation: presentation,
       onLogin:
           ({
             required FxLoginMethod method,

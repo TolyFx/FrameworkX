@@ -4,6 +4,9 @@ import 'package:fx_user_core/fx_user_core.dart';
 /// 登录方式：邮箱验证码、手机号验证码、账号密码。
 enum FxLoginMethod { emailCode, phoneCode, password, scan }
 
+/// 登录界面的承载方式：完整页面或仅包含表单的弹框。
+enum FxLoginPresentation { page, dialog }
+
 /// 登录提交回调：宿主根据方式、账号标识与凭证完成登录。
 typedef FxLoginSubmit =
     Future<void> Function({

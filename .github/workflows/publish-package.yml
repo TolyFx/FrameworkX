@@ -15,7 +15,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: publish-pub-dev
@@ -25,7 +24,6 @@ jobs:
   publish:
     name: Publish tagged packages
     runs-on: ubuntu-latest
-    environment: pub.dev
     steps:
       - name: Checkout tagged source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1f
@@ -77,6 +75,18 @@ jobs:
             (cd "$package_path" && flutter test)
           done < "$RUNNER_TEMP/release-packages.tsv"
 
+      - name: Restore pub.dev credentials
+        shell: bash
+        env:
+          PUB_CREDENTIALS_B64: ${{ secrets.PUB_CREDENTIALS_B64 }}
+        run: |
+          set -euo pipefail
+          [[ -n "$PUB_CREDENTIALS_B64" ]] || { echo "缺少 PUB_CREDENTIALS_B64。" >&2; exit 1; }
+          credentials_dir="$HOME/.config/dart"
+          mkdir -p "$credentials_dir"
+          printf '%s' "$PUB_CREDENTIALS_B64" | base64 --decode > "$credentials_dir/pub-credentials.json"
+          chmod 600 "$credentials_dir/pub-credentials.json"
+
       - name: Publish packages
         shell: bash
         run: |
@@ -93,3 +103,8 @@ jobs:
               sleep 5
             done
           done < "$RUNNER_TEMP/release-packages.tsv"
+
+      - name: Remove pub.dev credentials
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.config/dart/pub-credentials.json"

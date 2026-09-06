@@ -4,16 +4,21 @@ FrameworkX 的 `fx_*` 包通过 GitHub Actions 发布到 pub.dev。
 
 ## 环境配置
 
-- GitHub Environment：`pub.dev`
-- 认证方式：pub.dev Trusted Publishing（GitHub OIDC）
-- Workflow 权限：`contents: read`、`id-token: write`
-- 不在仓库或本机项目配置中保存 pub.dev 凭据
+- 认证方式：GitHub Actions Secret `PUB_CREDENTIALS_B64`
+- 本地凭据备份：`/Volumes/Toly1T/File/config/env/PUB_CREDENTIALS_B64`
+- Workflow 权限：`contents: read`
+- 凭据只保存在本机私有目录和 GitHub Secret 中，不提交到仓库
 
-pub.dev 后台的 Automated Publishing 必须绑定：
+配置或更新仓库 Secret：
 
-- Repository：`TolyFx/FrameworkX`
-- Workflow：`publish-package.yml`
-- Environment：`pub.dev`
+```bash
+gh secret set PUB_CREDENTIALS_B64 \
+  --repo TolyFx/FrameworkX \
+  < /Volumes/Toly1T/File/config/env/PUB_CREDENTIALS_B64
+```
+
+本地文件权限应保持为 `600`。工作流运行时会临时还原
+`~/.config/dart/pub-credentials.json`，发布结束后立即删除。
 
 ## 发布标签
 

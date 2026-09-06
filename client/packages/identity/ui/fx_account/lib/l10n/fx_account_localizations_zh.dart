@@ -170,4 +170,37 @@ class FxAccountLocalizationsZh extends FxAccountLocalizations {
 
   @override
   String get passwordResetSuccess => '密码重置成功，请使用新密码登录';
+
+  @override
+  String get avatar => '头像';
+
+  @override
+  String get username => '用户名';
+
+  @override
+  String get signature => '个性签名';
+
+  @override
+  String get notSet => '未设置';
+
+  @override
+  String get setPasswordTitle => '设置密码';
+
+  @override
+  String get setPasswordDescription => '为账号设置一个密码';
+
+  @override
+  String get setPasswordHint => '请输入密码（至少6位）';
+
+  @override
+  String get confirmPasswordHint => '请再次输入密码';
+
+  @override
+  String get passwordTooShort => '密码至少 6 位';
+
+  @override
+  String get setPasswordFailed => '密码设置失败';
+
+  @override
+  String get logout => '退出登录';
 }

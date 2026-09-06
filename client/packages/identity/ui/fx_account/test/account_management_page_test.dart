@@ -7,6 +7,9 @@ void main() {
     bool passwordOpened = false;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: FxAccountLocalizations.localizationsDelegates,
+        supportedLocales: FxAccountLocalizations.supportedLocales,
         home: AccountManagementPage(
           data: AccountManagementData(
             title: '账号管理',
@@ -37,6 +40,9 @@ void main() {
     bool passwordOpened = false;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: FxAccountLocalizations.localizationsDelegates,
+        supportedLocales: FxAccountLocalizations.supportedLocales,
         home: AccountManagementPage(
           data: AccountManagementData(
             title: '账号管理',

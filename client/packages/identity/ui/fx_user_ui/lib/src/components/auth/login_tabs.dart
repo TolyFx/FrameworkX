@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 import 'login_types.dart';
 
 /// 登录方式切换：iOS 风格滑动分段控件。
@@ -48,7 +50,7 @@ class LoginTabs extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  _methodName(method, isDesktop: isDesktop),
+                  _methodName(context, method),
                   style: const TextStyle(fontSize: 14),
                 ),
               ],
@@ -65,11 +67,13 @@ class LoginTabs extends StatelessWidget {
     FxLoginMethod.scan => Icons.qr_code,
   };
 
-  String _methodName(FxLoginMethod method, {required bool isDesktop}) =>
-      switch (method) {
-        FxLoginMethod.emailCode => '邮箱登录',
-        FxLoginMethod.phoneCode => isDesktop ? '手机号' : '手机号登录',
-        FxLoginMethod.password => '密码登录',
-        FxLoginMethod.scan => '扫码登录',
-      };
+  String _methodName(BuildContext context, FxLoginMethod method) {
+    final FxUserUiLocalizations l10n = FxUserUiLocalizations.of(context)!;
+    return switch (method) {
+      FxLoginMethod.emailCode => l10n.emailLogin,
+      FxLoginMethod.phoneCode => l10n.phoneLogin,
+      FxLoginMethod.password => l10n.passwordLogin,
+      FxLoginMethod.scan => l10n.scanLogin,
+    };
+  }
 }

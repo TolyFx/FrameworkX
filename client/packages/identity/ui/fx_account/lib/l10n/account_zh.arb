@@ -53,5 +53,16 @@
   "phoneBoundSuccess": "手机号绑定成功",
   "phoneAlreadyBound": "该手机号已被其他账号绑定",
   "invalidPhone": "请输入正确的手机号",
-  "passwordResetSuccess": "密码重置成功，请使用新密码登录"
+  "passwordResetSuccess": "密码重置成功，请使用新密码登录",
+  "avatar": "头像",
+  "username": "用户名",
+  "signature": "个性签名",
+  "notSet": "未设置",
+  "setPasswordTitle": "设置密码",
+  "setPasswordDescription": "为账号设置一个密码",
+  "setPasswordHint": "请输入密码（至少6位）",
+  "confirmPasswordHint": "请再次输入密码",
+  "passwordTooShort": "密码至少 6 位",
+  "setPasswordFailed": "密码设置失败",
+  "logout": "退出登录"
 }

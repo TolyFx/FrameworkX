@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/fx_account_localizations.dart';
+
 /// 账号管理页面点击事件。
 typedef AccountManagementAction = Future<void> Function();
 
@@ -97,7 +99,7 @@ class AccountManagementData {
     required this.userId,
     required this.userIdLabel,
     required this.onLogout,
-    this.emptySignatureLabel = '未设置',
+    this.emptySignatureLabel = '',
     this.onAvatarTap,
     this.onUsernameTap,
     this.onSignatureTap,
@@ -120,6 +122,7 @@ class AccountManagementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FxAccountLocalizations l10n = FxAccountLocalizations.of(context)!;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color backgroundColor = isDark
         ? Colors.black
@@ -156,21 +159,23 @@ class AccountManagementPage extends StatelessWidget {
               color: tileColor,
               children: <Widget>[
                 _AccountRow(
-                  label: '头像',
+                  label: l10n.avatar,
                   value: data.avatar,
                   onTap: data.onAvatarTap,
                   verticalPadding: 12,
                 ),
                 _AccountRow(
-                  label: '用户名',
+                  label: l10n.username,
                   value: _AccountValue(text: data.username),
                   onTap: data.onUsernameTap,
                 ),
                 _AccountRow(
-                  label: '个性签名',
+                  label: l10n.signature,
                   value: _AccountValue(
                     text: data.signature.isEmpty
-                        ? data.emptySignatureLabel
+                        ? data.emptySignatureLabel.isEmpty
+                              ? l10n.notSet
+                              : data.emptySignatureLabel
                         : data.signature,
                     placeholder: data.signature.isEmpty,
                   ),
@@ -209,14 +214,16 @@ class AccountManagementPage extends StatelessWidget {
                 children: <Widget>[
                   if (_passwordAction != null)
                     _AccountRow(
-                      label: data.hasPassword ? '修改密码' : '设置密码',
+                      label: data.hasPassword
+                          ? l10n.changePasswordTitle
+                          : l10n.setPasswordTitle,
                       value: const SizedBox.shrink(),
                       onTap: _passwordAction,
                     ),
                   ...data.securityItems.map(_buildConfiguredRow),
                   if (data.onDeleteAccount != null)
                     _AccountRow(
-                      label: '注销账号',
+                      label: l10n.deleteAccountTitle,
                       labelColor: Colors.red,
                       value: const SizedBox.shrink(),
                       onTap: data.onDeleteAccount,
@@ -231,9 +238,9 @@ class AccountManagementPage extends StatelessWidget {
                 height: 54,
                 color: tileColor,
                 alignment: Alignment.center,
-                child: const Text(
-                  '退出登录',
-                  style: TextStyle(fontSize: 16, color: Colors.red),
+                child: Text(
+                  l10n.logout,
+                  style: const TextStyle(fontSize: 16, color: Colors.red),
                 ),
               ),
             ),
@@ -343,7 +350,7 @@ class _AccountRow extends StatelessWidget {
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: 104,
+              width: 128,
               child: Text(
                 label,
                 style: const TextStyle(

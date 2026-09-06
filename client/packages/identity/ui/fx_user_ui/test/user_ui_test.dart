@@ -77,6 +77,9 @@ Widget _buildLoginApp(
 }) {
   return MaterialApp(
     theme: theme,
+    locale: const Locale('zh'),
+    localizationsDelegates: FxUserUiLocalizations.localizationsDelegates,
+    supportedLocales: FxUserUiLocalizations.supportedLocales,
     home: FxLoginPage(
       config: config,
       presentation: presentation,

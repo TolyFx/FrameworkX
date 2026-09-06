@@ -1,0 +1,108 @@
+# 根据标签定位 FrameworkX Client Workspace 成员并发布到 pub.dev。
+name: Publish package
+
+on:
+  push:
+    tags:
+      - 'fx_*-v*'
+      - 'publish/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-pub-dev
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish tagged packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1f
+
+      - name: Set up Flutter
+        uses: flutter-actions/setup-flutter@6e2468fd827c4a7337cd4b835a6049b78bc0bd1f
+        with:
+          version: '3.44.0'
+          channel: stable
+
+      - name: Resolve workspace
+        working-directory: client
+        run: flutter pub get
+
+      - name: Resolve and validate release packages
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          parsed_manifest="$RUNNER_TEMP/release-parsed.tsv"
+          release_manifest="$RUNNER_TEMP/release-packages.tsv"
+          bash .github/scripts/resolve-release-tag.sh "$RELEASE_TAG" > "$parsed_manifest"
+          : > "$release_manifest"
+
+          while IFS=$'\t' read -r package_name tag_version; do
+            workspace_path="$(dart pub -C client workspace list | awk -v package="$package_name" '$1 == package { print $2 }')"
+            [[ -n "$workspace_path" ]] || { echo "Workspace 中不存在包：$package_name" >&2; exit 1; }
+            package_path="${workspace_path%/}"
+            pubspec_version="$(sed -n 's/^version:[[:space:]]*//p' "$package_path/pubspec.yaml" | head -n 1 | tr -d "\"'")"
+            [[ "$pubspec_version" == "$tag_version" ]] || {
+              echo "包 $package_name 的标签版本与 pubspec 不一致。" >&2
+              exit 1
+            }
+            for required_file in LICENSE CHANGELOG.md README.md "lib/$package_name.dart"; do
+              [[ -f "$package_path/$required_file" ]] || { echo "缺少：$package_path/$required_file" >&2; exit 1; }
+            done
+            printf '%s\t%s\t%s\n' "$package_name" "$tag_version" "$package_path" >> "$release_manifest"
+          done < "$parsed_manifest"
+
+          column -t -s $'\t' "$release_manifest"
+
+      - name: Test release packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r package_name package_version package_path; do
+            echo "Testing $package_name $package_version"
+            (cd "$package_path" && flutter test)
+          done < "$RUNNER_TEMP/release-packages.tsv"
+
+      - name: Restore pub.dev credentials
+        shell: bash
+        env:
+          PUB_CREDENTIALS_B64: ${{ secrets.PUB_CREDENTIALS_B64 }}
+        run: |
+          set -euo pipefail
+          test -n "$PUB_CREDENTIALS_B64"
+          mkdir -p "$HOME/.config/dart"
+          printf '%s' "$PUB_CREDENTIALS_B64" | base64 --decode > "$HOME/.config/dart/pub-credentials.json"
+          chmod 600 "$HOME/.config/dart/pub-credentials.json"
+
+      - name: Publish packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r package_name package_version package_path; do
+            dart pub -C "$package_path" publish --dry-run --ignore-warnings
+            dart pub -C "$package_path" publish --force
+            for attempt in {1..30}; do
+              if curl -fsSL "https://pub.dev/api/packages/$package_name?attempt=$attempt" \
+                | jq -e --arg version "$package_version" 'any(.versions[]; .version == $version)' >/dev/null; then
+                break
+              fi
+              [[ "$attempt" -lt 30 ]] || { echo "pub.dev 未确认发布。" >&2; exit 1; }
+              sleep 5
+            done
+          done < "$RUNNER_TEMP/release-packages.tsv"
+
+      - name: Remove pub.dev credentials
+        if: always()
+        shell: bash
+        run: |
+          credentials_file="$HOME/.config/dart/pub-credentials.json"
+          if [[ -f "$credentials_file" ]]; then
+            truncate -s 0 "$credentials_file"
+            unlink "$credentials_file"
+          fi

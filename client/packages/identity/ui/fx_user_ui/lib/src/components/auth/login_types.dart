@@ -51,7 +51,7 @@ class FxUserUiConfig {
     this.subtitle = '',
     this.logo,
     this.methods = const {FxLoginMethod.emailCode, FxLoginMethod.password},
-    this.agreementText = '登录即代表您同意《用户协议》和《隐私政策》，未注册绑定的手机号验证成功后将自动注册',
+    this.agreementText = '',
     this.onUserAgreement,
     this.onPrivacyPolicy,
     this.onGithubLogin,

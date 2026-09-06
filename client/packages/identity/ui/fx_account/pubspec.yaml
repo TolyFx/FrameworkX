@@ -1,6 +1,6 @@
 name: fx_account
 description: 可复用的账户资料与安全操作界面套件。
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/TolyFx/fx
 resolution: workspace
 

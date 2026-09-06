@@ -186,4 +186,37 @@ class FxAccountLocalizationsEn extends FxAccountLocalizations {
   @override
   String get passwordResetSuccess =>
       'Password reset. Sign in with your new password';
+
+  @override
+  String get avatar => 'Avatar';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get signature => 'Bio';
+
+  @override
+  String get notSet => 'Not set';
+
+  @override
+  String get setPasswordTitle => 'Set Password';
+
+  @override
+  String get setPasswordDescription => 'Create a password';
+
+  @override
+  String get setPasswordHint => 'Enter password (6+ characters)';
+
+  @override
+  String get confirmPasswordHint => 'Enter password again';
+
+  @override
+  String get passwordTooShort => 'Use at least 6 characters';
+
+  @override
+  String get setPasswordFailed => 'Password setup failed';
+
+  @override
+  String get logout => 'Log Out';
 }

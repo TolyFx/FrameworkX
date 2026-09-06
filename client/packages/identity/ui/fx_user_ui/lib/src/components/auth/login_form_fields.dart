@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 import '../shared/labeled_input.dart';
 import '../shared/style.dart';
 import 'login_types.dart';
@@ -29,15 +31,16 @@ class LoginFormFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FxUserUiLocalizations l10n = FxUserUiLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         LabeledInput(
           label: switch (method) {
-            FxLoginMethod.emailCode => '邮箱',
+            FxLoginMethod.emailCode => l10n.email,
             FxLoginMethod.phoneCode => '+86',
-            FxLoginMethod.password => '账号',
-            FxLoginMethod.scan => '账号',
+            FxLoginMethod.password => l10n.account,
+            FxLoginMethod.scan => l10n.account,
           },
           child: TextField(
             controller: identifierController,
@@ -47,10 +50,10 @@ class LoginFormFields extends StatelessWidget {
             style: const TextStyle(fontSize: 16),
             decoration: InputDecoration(
               hintText: method == FxLoginMethod.emailCode
-                  ? '请输入邮箱'
+                  ? l10n.emailHint
                   : method == FxLoginMethod.phoneCode
-                  ? '请输入手机号'
-                  : '用户ID/手机号/邮箱',
+                  ? l10n.phoneHint
+                  : l10n.accountHint,
               filled: false,
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -59,12 +62,12 @@ class LoginFormFields extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         LabeledInput(
-          label: _usesCode ? '验证码' : '密码',
+          label: _usesCode ? l10n.verificationCode : l10n.password,
           trailing: _usesCode
               ? GestureDetector(
                   onTap: _codeBusy ? null : onRequestCode,
                   child: Text(
-                    cooldownSeconds > 0 ? '${cooldownSeconds}s' : '获取验证码',
+                    cooldownSeconds > 0 ? '${cooldownSeconds}s' : l10n.getCode,
                     style: TextStyle(
                       fontSize: 14,
                       color: _codeBusy ? Colors.grey : fxPrimary,
@@ -82,7 +85,7 @@ class LoginFormFields extends StatelessWidget {
             maxLength: _usesCode ? 6 : null,
             style: const TextStyle(fontSize: 16),
             decoration: InputDecoration(
-              hintText: _usesCode ? '请输入验证码' : '请输入密码',
+              hintText: _usesCode ? l10n.codeHint : l10n.passwordHint,
               filled: false,
               border: InputBorder.none,
               counterText: '',

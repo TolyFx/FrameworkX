@@ -418,6 +418,72 @@ abstract class FxAccountLocalizations {
   /// In en, this message translates to:
   /// **'Password reset. Sign in with your new password'**
   String get passwordResetSuccess;
+
+  /// No description provided for @avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar'**
+  String get avatar;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @signature.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get signature;
+
+  /// No description provided for @notSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get notSet;
+
+  /// No description provided for @setPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Password'**
+  String get setPasswordTitle;
+
+  /// No description provided for @setPasswordDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a password'**
+  String get setPasswordDescription;
+
+  /// No description provided for @setPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password (6+ characters)'**
+  String get setPasswordHint;
+
+  /// No description provided for @confirmPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password again'**
+  String get confirmPasswordHint;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 6 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @setPasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Password setup failed'**
+  String get setPasswordFailed;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
 }
 
 class _FxAccountLocalizationsDelegate

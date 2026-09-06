@@ -53,5 +53,16 @@
   "phoneBoundSuccess": "Phone number bound successfully",
   "phoneAlreadyBound": "This phone number is already bound to another account",
   "invalidPhone": "Enter a valid phone number",
-  "passwordResetSuccess": "Password reset. Sign in with your new password"
+  "passwordResetSuccess": "Password reset. Sign in with your new password",
+  "avatar": "Avatar",
+  "username": "Username",
+  "signature": "Bio",
+  "notSet": "Not set",
+  "setPasswordTitle": "Set Password",
+  "setPasswordDescription": "Create a password",
+  "setPasswordHint": "Enter password (6+ characters)",
+  "confirmPasswordHint": "Enter password again",
+  "passwordTooShort": "Use at least 6 characters",
+  "setPasswordFailed": "Password setup failed",
+  "logout": "Log Out"
 }

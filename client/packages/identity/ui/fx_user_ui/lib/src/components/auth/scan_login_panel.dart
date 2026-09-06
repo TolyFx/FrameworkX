@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:fx_user_core/fx_user_core.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 class ScanLoginPanel extends StatefulWidget {
   final Future<FxScanSession> Function() createSession;
   final Future<FxScanStatus> Function(String token) pollStatus;
@@ -71,6 +73,7 @@ class _ScanLoginPanelState extends State<ScanLoginPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final FxUserUiLocalizations l10n = FxUserUiLocalizations.of(context)!;
     final current = session;
     if (status == 'loading') {
       return const SizedBox(
@@ -85,7 +88,7 @@ class _ScanLoginPanelState extends State<ScanLoginPanel> {
           child: TextButton.icon(
             onPressed: _create,
             icon: const Icon(Icons.refresh),
-            label: const Text('重新加载二维码'),
+            label: Text(l10n.reloadQrCode),
           ),
         ),
       );
@@ -106,24 +109,24 @@ class _ScanLoginPanelState extends State<ScanLoginPanel> {
                   child: Center(
                     child: TextButton(
                       onPressed: _create,
-                      child: const Text('二维码已过期，点击刷新'),
+                      child: Text(l10n.qrCodeExpired),
                     ),
                   ),
                 ),
               ),
             if (status == 'scanned')
-              const ColoredBox(
+              ColoredBox(
                 color: Color(0xEEFFFFFF),
                 child: SizedBox(
                   width: 220,
                   height: 220,
-                  child: Center(child: Text('已扫码，请在手机上确认')),
+                  child: Center(child: Text(l10n.scanConfirmed)),
                 ),
               ),
           ],
         ),
         const SizedBox(height: 14),
-        const Text('使用已登录的移动端扫描二维码', style: TextStyle(color: Colors.grey)),
+        Text(l10n.scanQrCodeHint, style: const TextStyle(color: Colors.grey)),
       ],
     );
   }

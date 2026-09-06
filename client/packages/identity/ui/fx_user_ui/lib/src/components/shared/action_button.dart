@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 import 'style.dart';
 
 /// 登录按钮：灰色禁用态、蓝色可用态和三点加载动画。
@@ -17,6 +19,7 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String loginLabel = FxUserUiLocalizations.of(context)!.login;
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -40,7 +43,7 @@ class ActionButton extends StatelessWidget {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('登录', style: TextStyle(fontSize: 16)),
+                  : Text(loginLabel, style: const TextStyle(fontSize: 16)),
             )
           : OutlinedButton(
               onPressed: null,
@@ -51,7 +54,7 @@ class ActionButton extends StatelessWidget {
                 side: BorderSide(color: Colors.grey[300]!),
               ),
               child: Text(
-                '登录',
+                loginLabel,
                 style: TextStyle(fontSize: 16, color: Colors.grey[400]),
               ),
             ),

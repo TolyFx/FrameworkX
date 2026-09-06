@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 /// 其他登录方式：分隔线标题 + 第三方入口与「验证码/密码登录」切换。
 class OtherLoginRow extends StatelessWidget {
   final bool loading;
@@ -27,6 +29,7 @@ class OtherLoginRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FxUserUiLocalizations l10n = FxUserUiLocalizations.of(context)!;
     if (!showGithub && !showApple && !showPasswordToggle) {
       return const SizedBox.shrink();
     }
@@ -38,7 +41,7 @@ class OtherLoginRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                '其他登录方式',
+                l10n.otherLoginMethods,
                 style: TextStyle(fontSize: 12, color: Colors.grey[500]),
               ),
             ),
@@ -46,13 +49,16 @@ class OtherLoginRow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: _items()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _items(l10n),
+        ),
       ],
     );
   }
 
-  List<Widget> _items() {
-    final items = <Widget>[
+  List<Widget> _items(FxUserUiLocalizations l10n) {
+    final List<Widget> items = <Widget>[
       if (showApple &&
           !kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
@@ -62,12 +68,12 @@ class OtherLoginRow extends StatelessWidget {
       if (showPasswordToggle)
         _OtherLoginItem(
           icon: Icons.lock_outline,
-          label: isCodeMode ? '密码登录' : '验证码登录',
+          label: isCodeMode ? l10n.passwordLogin : l10n.codeLogin,
           onTap: loading ? null : onToggleMode,
         ),
     ];
     return [
-      for (var index = 0; index < items.length; index++) ...[
+      for (int index = 0; index < items.length; index++) ...[
         if (index > 0) const SizedBox(width: 24),
         items[index],
       ],

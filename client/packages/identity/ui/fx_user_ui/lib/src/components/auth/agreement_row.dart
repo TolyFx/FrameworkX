@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/fx_user_ui_localizations.dart';
+
 import '../shared/style.dart';
 
 /// 协议勾选行：点击整行切换勾选态。
@@ -22,6 +24,7 @@ class AgreementRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FxUserUiLocalizations l10n = FxUserUiLocalizations.of(context)!;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -50,11 +53,11 @@ class AgreementRow extends StatelessWidget {
               TextSpan(
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 children: [
-                  const TextSpan(text: '登录即代表您同意'),
-                  _link('《用户协议》', onUserAgreement),
-                  const TextSpan(text: '和'),
-                  _link('《隐私政策》', onPrivacyPolicy),
-                  const TextSpan(text: '，未注册绑定的手机号验证成功后将自动注册'),
+                  TextSpan(text: l10n.agreementPrefix),
+                  _link(l10n.userAgreement, onUserAgreement),
+                  TextSpan(text: l10n.agreementAnd),
+                  _link(l10n.privacyPolicy, onPrivacyPolicy),
+                  TextSpan(text: l10n.agreementSuffix),
                 ],
               ),
             ),

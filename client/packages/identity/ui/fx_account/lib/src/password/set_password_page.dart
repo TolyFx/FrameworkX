@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/fx_account_localizations.dart';
+
 /// 设置密码提交任务。
 typedef SetPasswordSubmit = Future<bool> Function(String password);
 
@@ -60,14 +62,15 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
 
   /// 校验两次密码并提交给宿主。
   Future<void> _submit() async {
+    final FxAccountLocalizations l10n = FxAccountLocalizations.of(context)!;
     final String password = _passwordController.text.trim();
     final String confirmation = _confirmationController.text.trim();
     if (password.length < _minimumLength) {
-      widget.onMessage?.call('密码至少 6 位');
+      widget.onMessage?.call(l10n.passwordTooShort);
       return;
     }
     if (password != confirmation) {
-      widget.onMessage?.call('两次输入的密码不一致');
+      widget.onMessage?.call(l10n.passwordsDoNotMatch);
       return;
     }
     setState(() => _submitting = true);
@@ -75,12 +78,12 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
       final bool succeeded = await widget.onSubmit(password);
       if (!mounted) return;
       if (!succeeded) {
-        widget.onMessage?.call('密码设置失败');
+        widget.onMessage?.call(l10n.setPasswordFailed);
         return;
       }
       Navigator.of(context).pop();
     } catch (_) {
-      if (mounted) widget.onMessage?.call('密码设置失败');
+      if (mounted) widget.onMessage?.call(l10n.setPasswordFailed);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -88,6 +91,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final FxAccountLocalizations l10n = FxAccountLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color backgroundColor = isDark
@@ -111,7 +115,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
           ),
         ),
         title: Text(
-          '设置密码',
+          l10n.setPasswordTitle,
           style: TextStyle(
             color: foregroundColor,
             fontSize: 17,
@@ -125,7 +129,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
           children: <Widget>[
             Text(
-              '为账号设置一个密码',
+              l10n.setPasswordDescription,
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
@@ -134,7 +138,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
             const SizedBox(height: 24),
             _buildInput(
               controller: _passwordController,
-              hint: '请输入密码（至少6位）',
+              hint: l10n.setPasswordHint,
               foregroundColor: foregroundColor,
               borderColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
               autofocus: true,
@@ -142,12 +146,12 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
             const SizedBox(height: 16),
             _buildInput(
               controller: _confirmationController,
-              hint: '请再次输入密码',
+              hint: l10n.confirmPasswordHint,
               foregroundColor: foregroundColor,
               borderColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
             ),
             const SizedBox(height: 48),
-            _buildActionButton(),
+            _buildActionButton(l10n.confirm),
           ],
         ),
       ),
@@ -184,7 +188,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
     );
   }
 
-  Widget _buildActionButton() {
+  Widget _buildActionButton(String label) {
     const Color primaryColor = Color(0xFF3B82F6);
     return SizedBox(
       width: double.infinity,
@@ -208,7 +212,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('确认', style: TextStyle(fontSize: 16)),
+                  : Text(label, style: const TextStyle(fontSize: 16)),
             )
           : OutlinedButton(
               onPressed: null,
@@ -219,7 +223,7 @@ class _SetPasswordPageState extends State<SetPasswordPage> {
                 ),
               ),
               child: Text(
-                '确认',
+                label,
                 style: TextStyle(fontSize: 16, color: Colors.grey.shade400),
               ),
             ),

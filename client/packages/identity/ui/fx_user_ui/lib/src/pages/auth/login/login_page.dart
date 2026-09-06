@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../l10n/fx_user_ui_localizations.dart';
+
 import '../../../components/auth/login_form_body.dart';
 import '../../../components/auth/login_types.dart';
 import '../../../components/auth/scan_login_panel.dart';
@@ -136,7 +138,7 @@ class _FxLoginPageState extends State<FxLoginPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: IconButton(
-                    tooltip: '关闭',
+                    tooltip: FxUserUiLocalizations.of(context)!.close,
                     onPressed: widget.onClose,
                     icon: const Icon(Icons.close_rounded),
                   ),
@@ -155,9 +157,11 @@ class _FxLoginPageState extends State<FxLoginPage> {
     if (createSession == null ||
         pollStatus == null ||
         onAuthenticated == null) {
-      return const SizedBox(
+      return SizedBox(
         height: 240,
-        child: Center(child: Text('当前宿主未配置扫码登录')),
+        child: Center(
+          child: Text(FxUserUiLocalizations.of(context)!.scanUnavailable),
+        ),
       );
     }
     return ScanLoginPanel(
@@ -169,7 +173,7 @@ class _FxLoginPageState extends State<FxLoginPage> {
 
   Future<void> _requestCode() async {
     if (!_agreed) {
-      _showToast('请先阅读并同意用户协议和隐私政策');
+      _showToast(FxUserUiLocalizations.of(context)!.acceptAgreements);
       return;
     }
     if (_sendingCode || _cooldownSeconds > 0) return;
@@ -193,7 +197,7 @@ class _FxLoginPageState extends State<FxLoginPage> {
 
   Future<void> _submit() async {
     if (!_agreed) {
-      _showToast('请先阅读并同意用户协议和隐私政策');
+      _showToast(FxUserUiLocalizations.of(context)!.acceptAgreements);
       return;
     }
     setState(() {
@@ -216,11 +220,11 @@ class _FxLoginPageState extends State<FxLoginPage> {
 
   Future<void> _thirdPartyLogin(FxThirdPartyLogin? login) async {
     if (!_agreed) {
-      _showToast('请先阅读并同意用户协议和隐私政策');
+      _showToast(FxUserUiLocalizations.of(context)!.acceptAgreements);
       return;
     }
     if (login == null) {
-      _showToast('当前宿主未配置该登录方式');
+      _showToast(FxUserUiLocalizations.of(context)!.loginMethodUnavailable);
       return;
     }
     setState(() {

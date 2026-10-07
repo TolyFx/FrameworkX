@@ -11,3 +11,4 @@
 
 具体格式在首次 auth/user 迁移设计中确定，当前不提前绑定 OpenAPI、JSON Schema 或代码生成工具。
 
+已实现协议：[独立公开图片访问](public-images.md)。

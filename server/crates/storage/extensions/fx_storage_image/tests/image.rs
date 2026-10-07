@@ -76,3 +76,25 @@ async fn transform_image_supports_dynamic_cover_dimensions() {
     assert_eq!((image.width(), image.height()), (240, 135));
     assert_eq!(output.mime_type, "image/webp");
 }
+
+#[tokio::test]
+async fn transform_rejects_inferred_dimensions_beyond_budget() {
+    let extractor = ImageExtractor::new(400, 80);
+    for (width, height) in [(Some(4096), None), (Some(0), Some(10))] {
+        assert!(
+            extractor
+                .transform_image(
+                    &png_bytes(1, 20),
+                    ImageTransform {
+                        width,
+                        height,
+                        fit: ImageFit::Contain,
+                        quality: 80,
+                        format: ImageOutputFormat::Png,
+                    }
+                )
+                .await
+                .is_err()
+        );
+    }
+}

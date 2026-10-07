@@ -72,7 +72,7 @@ async fn get_public_image(
     let mut response = bytes.into_response();
     response.headers_mut().insert(
         header::CONTENT_TYPE,
-        HeaderValue::from_str(&mime_type)
+        HeaderValue::from_str(mime_type)
             .map_err(|error| AppError::internal(error, "public image mime"))?,
     );
     response.headers_mut().insert(
@@ -82,7 +82,7 @@ async fn get_public_image(
     Ok(response)
 }
 
-fn mime_from_path(path: &std::path::Path) -> AppResult<&'static str> {
+pub(super) fn mime_from_path(path: &std::path::Path) -> AppResult<&'static str> {
     match path
         .extension()
         .and_then(|value| value.to_str())

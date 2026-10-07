@@ -56,6 +56,19 @@ impl MetadataExtractor for ImageExtractor {
         data: &[u8],
         transform: ImageTransform,
     ) -> Result<TransformedImage, StorageError> {
+        // 先读尺寸再解码，限制压缩文件展开后的内存与单边推导出的目标尺寸。
+        let (source_width, source_height) = ImageReader::new(Cursor::new(data))
+            .with_guessed_format()
+            .map_err(image_error)?
+            .into_dimensions()
+            .map_err(image_error)?;
+        if source_width == 0
+            || source_height == 0
+            || source_width as u64 * source_height as u64 > 32_000_000
+        {
+            return Err(StorageError::Image("图片源像素超出允许范围".to_owned()));
+        }
+        target_dimensions(source_width, source_height, transform)?;
         let image = ImageReader::new(Cursor::new(data))
             .with_guessed_format()
             .map_err(image_error)?
@@ -98,23 +111,39 @@ fn transform_dimensions(
     transform: ImageTransform,
 ) -> Result<DynamicImage, StorageError> {
     let (source_width, source_height) = (image.width(), image.height());
-    let (width, height) = match (transform.width, transform.height) {
-        (Some(width), Some(height)) => (width, height),
-        (Some(width), None) => (
-            width,
-            ((source_height as u64 * width as u64) / source_width as u64).max(1) as u32,
-        ),
-        (None, Some(height)) => (
-            ((source_width as u64 * height as u64) / source_height as u64).max(1) as u32,
-            height,
-        ),
-        (None, None) => return Err(StorageError::Image("缺少目标宽度或高度".to_owned())),
-    };
+    let (width, height) = target_dimensions(source_width, source_height, transform)?;
+    // 只指定单边时比例已推导；再次 contain 会因整数取整把指定边缩小一像素。
+    if transform.width.is_none() || transform.height.is_none() {
+        return Ok(image.resize_exact(width, height, FilterType::Lanczos3));
+    }
     Ok(match transform.fit {
         ImageFit::Contain => image.resize(width, height, FilterType::Lanczos3),
         ImageFit::Cover => image.resize_to_fill(width, height, FilterType::Lanczos3),
         ImageFit::Fill => image.resize_exact(width, height, FilterType::Lanczos3),
     })
+}
+
+fn target_dimensions(
+    source_width: u32,
+    source_height: u32,
+    transform: ImageTransform,
+) -> Result<(u32, u32), StorageError> {
+    let (width, height) = match (transform.width, transform.height) {
+        (Some(width), Some(height)) => (width as u64, height as u64),
+        (Some(width), None) => (
+            width as u64,
+            ((source_height as u64 * width as u64) / source_width as u64).max(1),
+        ),
+        (None, Some(height)) => (
+            ((source_width as u64 * height as u64) / source_height as u64).max(1),
+            height as u64,
+        ),
+        (None, None) => return Err(StorageError::Image("缺少目标宽度或高度".to_owned())),
+    };
+    if width == 0 || height == 0 || width > 4096 || height > 4096 || width * height > 16_000_000 {
+        return Err(StorageError::Image("图片目标尺寸超出允许范围".to_owned()));
+    }
+    Ok((width as u32, height as u32))
 }
 
 fn image_error(error: impl std::fmt::Display) -> StorageError {

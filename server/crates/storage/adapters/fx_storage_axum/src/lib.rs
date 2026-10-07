@@ -4,6 +4,7 @@
 //! reference checks and enriched asset catalog endpoints remain in the host domain.
 
 mod direct;
+mod public_images;
 mod public_local;
 
 use std::sync::Arc;
@@ -24,6 +25,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 pub use direct::{DirectUploadState, direct_routes};
+pub use public_images::{PublicImageState, public_image_routes};
 pub use public_local::{PublicLocalImageState, public_local_image_routes};
 
 /// Host boundary that turns request authentication into an opaque storage scope.

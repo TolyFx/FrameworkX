@@ -13,6 +13,14 @@ serde.workspace = true
 serde_json.workspace = true
 uuid.workspace = true
 tokio.workspace = true
+tower = { version = "0.5", features = ["util"] }
+tower-http = { workspace = true, features = ["fs"] }
+sha2 = "0.10"
+
+[dev-dependencies]
+fx_storage_image = { path = "../../extensions/fx_storage_image" }
+image = "0.25"
+tempfile = "3"
 
 [lints]
 workspace = true
